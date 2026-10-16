@@ -34,7 +34,15 @@ jobs:
         run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
       - name: Build Debug APK
-        run: ./gradlew assembleDebug --no-daemon --stacktrace
+        run: |
+          set -o pipefail
+          ./gradlew assembleDebug --no-daemon --stacktrace 2>&1 | tee build_full.log || {
+            echo "### ❌ Build Debug APK Failed" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            tail -n 120 build_full.log >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            exit 1
+          }
 
       - name: Upload Debug APK Artifact
         if: success()
@@ -50,6 +58,7 @@ jobs:
         with:
           name: build-failure-logs
           path: |
+            build_full.log
             app/build/reports/
             app/build/outputs/logs/
           retention-days: 7

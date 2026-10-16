@@ -144,7 +144,9 @@ dependencies {
     implementation(libs.gson)
 
     // PDF & CSV
-    implementation(libs.itext7.core)
+    implementation(libs.itext7.kernel)
+    implementation(libs.itext7.layout)
+    implementation(libs.itext7.io)
     implementation(libs.opencsv)
 
     // Testing

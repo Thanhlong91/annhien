@@ -10,7 +10,7 @@ navigation = "2.8.3"
 datastore = "1.1.1"
 workmanager = "2.9.1"
 biometric = "1.2.0-alpha05"
-sqlcipher = "4.5.7"
+sqlcipher = "4.5.4"
 sqliteAndroid = "2.4.0"
 itext7 = "7.2.6"
 opencsv = "5.9"
@@ -96,7 +96,9 @@ kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 
 # PDF
-itext7-core = { group = "com.itextpdf", name = "itext7-core", version.ref = "itext7" }
+itext7-kernel = { group = "com.itextpdf", name = "kernel", version.ref = "itext7" }
+itext7-layout = { group = "com.itextpdf", name = "layout", version.ref = "itext7" }
+itext7-io = { group = "com.itextpdf", name = "io", version.ref = "itext7" }
 
 # CSV
 opencsv = { group = "com.opencsv", name = "opencsv", version.ref = "opencsv" }
