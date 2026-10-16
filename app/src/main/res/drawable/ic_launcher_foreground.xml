@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Stylized lotus/leaf motif for An Nhiên health & calm -->
+    <path
+        android:fillColor="#4A6B53"
+        android:pathData="M54,28 C50,42 42,54 34,60 C42,66 50,68 54,80 C58,68 66,66 74,60 C66,54 58,42 54,28 Z" />
+    <path
+        android:fillColor="#769C80"
+        android:pathData="M54,46 C48,56 40,62 30,66 C38,72 46,72 54,68 C62,72 70,72 78,66 C68,62 60,56 54,46 Z" />
+</vector>

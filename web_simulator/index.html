@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>An Nhiên — Ứng Dụng Sức Khỏe Phụ Nữ (Mô Phỏng Trực Quan)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="light-theme">
+
+    <!-- Top Desktop Control Bar -->
+    <header class="desktop-bar">
+        <div class="brand">
+            <span class="logo-leaf">🌸</span>
+            <strong>An Nhiên</strong>
+            <span class="badge-offline"><i class="fa-solid fa-wifi-slash"></i> 100% Ngoại Tuyến</span>
+        </div>
+        <div class="controls">
+            <button id="btn-theme-toggle" class="btn-tool" title="Đổi giao diện sáng/tối">
+                <i class="fa-solid fa-moon"></i>
+            </button>
+            <button id="btn-frame-toggle" class="btn-tool" title="Chuyển chế độ khung điện thoại / toàn màn hình">
+                <i class="fa-solid fa-mobile-screen"></i>
+            </button>
+            <button id="btn-calc-toggle" class="btn-tool" title="Chế độ ngụy trang máy tính">
+                <i class="fa-solid fa-calculator"></i>
+            </button>
+            <button id="btn-lock-toggle" class="btn-tool" title="Khóa màn hình PIN">
+                <i class="fa-solid fa-lock"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container (Phone Device Mockup) -->
+    <main class="device-wrapper">
+        <div class="device-frame" id="device-frame">
+            <!-- Notch / Dynamic Island -->
+            <div class="device-island">
+                <div class="camera-lens"></div>
+                <div class="speaker-grill"></div>
+            </div>
+
+            <!-- Phone Screen -->
+            <div class="device-screen" id="device-screen">
+
+                <!-- Status Bar -->
+                <div class="status-bar">
+                    <span id="current-clock" class="clock">09:41</span>
+                    <div class="status-icons">
+                        <i class="fa-solid fa-signal"></i>
+                        <span class="offline-pill"><i class="fa-solid fa-shield-halved"></i> OFFLINE</span>
+                        <i class="fa-solid fa-battery-full"></i>
+                    </div>
+                </div>
+
+                <!-- App Header -->
+                <div class="app-header">
+                    <div>
+                        <h1 id="screen-title">Hôm nay</h1>
+                        <p id="screen-subtitle" class="subtitle">Thứ Năm, 16 tháng 10</p>
+                    </div>
+                    <div class="header-actions">
+                        <button id="btn-header-action" class="icon-btn">
+                            <i class="fa-regular fa-calendar-check"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Screen Contents Container -->
+                <div class="screen-content" id="screen-content">
+
+                    <!-- TAB 1: HÔM NAY (HOME) -->
+                    <section id="tab-home" class="tab-view active">
+                        <!-- Hero Cycle Card -->
+                        <div class="cycle-hero-card">
+                            <div class="hero-badge" id="hero-cycle-badge">
+                                Ngày 14 của chu kỳ
+                            </div>
+                            <h2 class="hero-title" id="hero-prediction-title">
+                                Dự đoán kỳ kinh sau: khoảng 14 ngày nữa
+                            </h2>
+                            <p class="hero-desc">
+                                Dựa trên trung vị các chu kỳ trước. Mang tính chất tự theo dõi tham khảo.
+                            </p>
+                            <button id="btn-toggle-period" class="btn-action-hero">
+                                <i class="fa-solid fa-droplet"></i>
+                                <span id="period-btn-label">Kỳ kinh bắt đầu hôm nay</span>
+                            </button>
+                        </div>
+
+                        <!-- Quick Log Actions -->
+                        <h3 class="section-title">Ghi nhanh cảm nhận</h3>
+                        <div class="quick-actions-grid">
+                            <div class="quick-btn" onclick="openJournalModal('symptom')">
+                                <div class="quick-icon icon-sage"><i class="fa-solid fa-notes-medical"></i></div>
+                                <span>Triệu chứng</span>
+                            </div>
+                            <div class="quick-btn" onclick="openJournalModal('mood')">
+                                <div class="quick-icon icon-rose"><i class="fa-regular fa-face-smile"></i></div>
+                                <span>Tâm trạng</span>
+                            </div>
+                            <div class="quick-btn" onclick="openJournalModal('sleep')">
+                                <div class="quick-icon icon-lavender"><i class="fa-solid fa-moon"></i></div>
+                                <span>Giấc ngủ</span>
+                            </div>
+                            <div class="quick-btn" onclick="addWater(250)">
+                                <div class="quick-icon icon-water"><i class="fa-solid fa-glass-water"></i></div>
+                                <span>+250ml Nước</span>
+                            </div>
+                        </div>
+
+                        <!-- Hydration Tracker -->
+                        <div class="card card-hydration">
+                            <div class="card-row">
+                                <div class="card-label">
+                                    <i class="fa-solid fa-bottle-water text-primary"></i>
+                                    <strong>Nước uống hôm nay</strong>
+                                </div>
+                                <span id="water-text" class="text-primary font-bold">1250 / 2000 ml</span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div id="water-bar" class="progress-bar-fill" style="width: 62.5%;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Daily Wellness Reassurance -->
+                        <div class="card card-tip">
+                            <div class="tip-icon"><i class="fa-regular fa-lightbulb"></i></div>
+                            <div>
+                                <strong>Lắng nghe cơ thể bạn</strong>
+                                <p class="tip-desc">
+                                    Mỗi cơ thể có một nhịp sinh học tự nhiên. Việc ghi nhận đều đặn giúp bạn hiểu rõ nhịp điệu của chính mình một cách bình an và khoa học nhất.
+                                </p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- TAB 2: LỊCH CHU KỲ (CALENDAR) -->
+                    <section id="tab-calendar" class="tab-view">
+                        <div class="calendar-nav-bar">
+                            <button id="btn-prev-month" class="btn-nav-cal"><i class="fa-solid fa-chevron-left"></i></button>
+                            <h3 id="calendar-month-label">Tháng 10, 2026</h3>
+                            <button id="btn-next-month" class="btn-nav-cal"><i class="fa-solid fa-chevron-right"></i></button>
+                        </div>
+
+                        <div class="calendar-grid-card">
+                            <div class="weekdays-row">
+                                <span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span><span>CN</span>
+                            </div>
+                            <div id="calendar-days-grid" class="days-grid">
+                                <!-- Days injected by JS -->
+                            </div>
+                        </div>
+
+                        <div class="legend-row">
+                            <span class="legend-item"><span class="dot dot-period"></span> Kỳ kinh</span>
+                            <span class="legend-item"><span class="dot dot-pred"></span> Dự đoán</span>
+                            <span class="legend-item"><span class="dot dot-journal"></span> Có nhật ký</span>
+                        </div>
+
+                        <!-- Selected Day Detail Sheet -->
+                        <div class="card card-day-detail">
+                            <div class="card-row">
+                                <h4 id="detail-date-label">Thứ Năm, 16 tháng 10</h4>
+                                <button id="btn-toggle-period-date" class="btn-text-action">Đánh dấu kinh</button>
+                            </div>
+                            <div id="detail-content" class="detail-body">
+                                <p class="text-muted">Chọn một ngày trên lịch để xem triệu chứng hoặc ghi chép.</p>
+                            </div>
+                            <button id="btn-log-selected-date" class="btn-primary-sm" onclick="openJournalModal()">
+                                <i class="fa-solid fa-pen"></i> Ghi nhật ký cho ngày này
+                            </button>
+                        </div>
+                    </section>
+
+                    <!-- TAB 3: NHẬT KÝ (JOURNAL) -->
+                    <section id="tab-journal" class="tab-view">
+                        <div class="search-bar-wrap">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="journal-search-input" placeholder="Tìm kiếm ghi chú, triệu chứng...">
+                        </div>
+
+                        <div id="journal-list" class="journal-feed">
+                            <!-- Injected by JS -->
+                        </div>
+                    </section>
+
+                    <!-- TAB 4: BÁO CÁO (REPORTS) -->
+                    <section id="tab-reports" class="tab-view">
+                        <div class="stats-row">
+                            <div class="stat-card">
+                                <i class="fa-solid fa-rotate text-primary"></i>
+                                <span class="stat-num" id="stat-cycle-len">29 ngày</span>
+                                <span class="stat-lbl">Độ dài chu kỳ</span>
+                                <small>Trung bình các chu kỳ</small>
+                            </div>
+                            <div class="stat-card">
+                                <i class="fa-solid fa-droplet text-primary"></i>
+                                <span class="stat-num" id="stat-period-len">5 ngày</span>
+                                <span class="stat-lbl">Kỳ hành kinh</span>
+                                <small>Số ngày trung bình</small>
+                            </div>
+                        </div>
+
+                        <div class="card card-regularity">
+                            <div class="card-row">
+                                <div class="regular-icon"><i class="fa-solid fa-chart-line"></i></div>
+                                <div>
+                                    <strong>Độ biến động chu kỳ</strong>
+                                    <p class="tip-desc">Chu kỳ của bạn tương đối đều đặn (chênh lệch dưới 5 ngày giữa các tháng gần nhất).</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h3 class="section-title">Xuất dữ liệu ngoại tuyến</h3>
+                        <div class="card card-export">
+                            <h4>Báo cáo sức khỏe PDF</h4>
+                            <p class="tip-desc">Xuất báo cáo tổng hợp để tham khảo cá nhân hoặc trao đổi với bác sĩ phụ khoa.</p>
+                            <button class="btn-primary" onclick="exportReport('pdf')">
+                                <i class="fa-solid fa-file-pdf"></i> Tải báo cáo PDF
+                            </button>
+                            <div class="divider"></div>
+                            <h4>Bảng dữ liệu chu kỳ CSV</h4>
+                            <p class="tip-desc">Xuất dữ liệu thô dạng file bảng tính để lưu trữ tự do.</p>
+                            <button class="btn-outline" onclick="exportReport('csv')">
+                                <i class="fa-solid fa-file-csv"></i> Tải tệp CSV
+                            </button>
+                        </div>
+                    </section>
+
+                    <!-- TAB 5: TIỆN ÍCH & 8 CHUYÊN ĐỀ (UTILITIES) -->
+                    <section id="tab-utilities" class="tab-view">
+                        <h3 class="section-title">Chuyên đề sức khỏe</h3>
+                        <div class="menu-group">
+                            <div class="menu-item" onclick="openModule('cycle')">
+                                <div class="menu-icon icon-sage"><i class="fa-regular fa-calendar-days"></i></div>
+                                <div class="menu-info">
+                                    <strong>Chu kỳ kinh nguyệt</strong>
+                                    <span>Lịch sử các kỳ kinh và dự đoán trung vị</span>
+                                </div>
+                                <i class="fa-solid fa-chevron-right chevron"></i>
+                            </div>
+                            <div class="menu-item" onclick="openModule('conception')">
+                                <div class="menu-icon icon-rose"><i class="fa-regular fa-heart"></i></div>
+                                <div class="menu-info">
+                                    <strong>Kế hoạch mang thai</strong>
+                                    <span>Nhiệt độ BBT, que LH, khóa thẩm định y tế</span>
+                                </div>
+                                <i class="fa-solid fa-chevron-right chevron"></i>
+                            </div>
+                            <div class="menu-item" onclick="openModule('pregnancy')">
+                                <div class="menu-icon icon-lavender"><i class="fa-solid fa-baby"></i></div>
+                                <div class="menu-info">
+                                    <strong>Theo dõi thai kỳ</strong>
+                                    <span>Tuần thai, đếm cử động thai máy &amp; cơn gò</span>
+                                </div>
+                                <i class="fa-solid fa-chevron-right chevron"></i>
+                            </div>
+                            <div class="menu-item" onclick="openModule('postpartum')">
+                                <div class="menu-icon icon-terracotta"><i class="fa-solid fa-person-breastfeeding"></i></div>
+                                <div class="menu-info">
+                                    <strong>Phục hồi sau sinh</strong>
+                                    <span>Sản dịch Lochia, cữ bú, tâm lý hậu sản</span>
+                                </div>
+                                <i class="fa-solid fa-chevron-right chevron"></i>
+                            </div>
+                            <div class="menu-item" onclick="openModule('perimenopause')">
+                                <div class="menu-icon icon-sun"><i class="fa-solid fa-sun"></i></div>
+                                <div class="menu-info">
+                                    <strong>Tiền mãn kinh</strong>
+                                    <span>Đếm cơn bốc hỏa live, giấc ngủ, thể chất</span>
+                                </div>
+                                <i class="fa-solid fa-chevron-right chevron"></i>
+                            </div>
+                            <div class="menu-item" onclick="openModule('pillpack')">
+                                <div class="menu-icon icon-water"><i class="fa-solid fa-pills"></i></div>
+                                <div class="menu-info">
+                                    <strong>Vỉ thuốc tránh thai 28 viên</strong>
+                                    <span>Tương tác vỉ thuốc, xử trí khi quên uống</span>
+                                </div>
+                                <i class="fa-solid fa-chevron-right chevron"></i>
+                            </div>
+                        </div>
+
+                        <h3 class="section-title">Chăm sóc &amp; Thư giãn</h3>
+                        <div class="menu-group">
+                            <div class="menu-item" onclick="openModule('kegel')">
+                                <div class="menu-icon icon-terracotta"><i class="fa-solid fa-heart-pulse"></i></div>
+                                <div class="menu-info">
+                                    <strong>Bài tập sàn chậu Kegel</strong>
+                                    <span>Đếm nhịp co thắt 5s - thả lỏng 5s</span>
+                                </div>
+                                <i class="fa-solid fa-chevron-right chevron"></i>
+                            </div>
+                            <div class="menu-item" onclick="openModule('breast')">
+                                <div class="menu-icon icon-rose"><i class="fa-solid fa-hand-holding-medical"></i></div>
+                                <div class="menu-info">
+                                    <strong>Tự khám vú định kỳ</strong>
+                                    <span>4 bước tự kiểm tra mô tuyến vú tại nhà</span>
+                                </div>
+                                <i class="fa-solid fa-chevron-right chevron"></i>
+                            </div>
+                            <div class="menu-item" onclick="openModule('epds')">
+                                <div class="menu-icon icon-lavender"><i class="fa-solid fa-clipboard-question"></i></div>
+                                <div class="menu-info">
+                                    <strong>Trắc nghiệm trầm cảm EPDS</strong>
+                                    <span>Sàng lọc tâm lý sau sinh 10 câu hỏi</span>
+                                </div>
+                                <i class="fa-solid fa-chevron-right chevron"></i>
+                            </div>
+                            <div class="menu-item" onclick="openModule('dailyhealth')">
+                                <div class="menu-icon icon-water"><i class="fa-solid fa-weight-scale"></i></div>
+                                <div class="menu-info">
+                                    <strong>Sức khỏe mỗi ngày</strong>
+                                    <span>Uống nước, tính BMI, thói quen sống</span>
+                                </div>
+                                <i class="fa-solid fa-chevron-right chevron"></i>
+                            </div>
+                            <div class="menu-item" onclick="openModule('relaxation')">
+                                <div class="menu-icon icon-sage"><i class="fa-solid fa-wind"></i></div>
+                                <div class="menu-info">
+                                    <strong>Thư giãn &amp; Nhịp thở</strong>
+                                    <span>Visual Box Breathing 4-4-4-4 &amp; Thở 4-7-8</span>
+                                </div>
+                                <i class="fa-solid fa-chevron-right chevron"></i>
+                            </div>
+                            <div class="menu-item" onclick="openModule('medicalrecords')">
+                                <div class="menu-icon icon-lavender"><i class="fa-solid fa-notes-medical"></i></div>
+                                <div class="menu-info">
+                                    <strong>Sổ khám bệnh &amp; Y bạ</strong>
+                                    <span>Lịch sử khám, dặn dò bác sĩ, đơn thuốc</span>
+                                </div>
+                                <i class="fa-solid fa-chevron-right chevron"></i>
+                            </div>
+                        </div>
+
+                        <h3 class="section-title">Hệ thống &amp; Bảo mật</h3>
+                        <div class="menu-group">
+                            <div class="menu-item" onclick="openModule('knowledge')">
+                                <div class="menu-icon icon-rose"><i class="fa-solid fa-book-medical"></i></div>
+                                <div class="menu-info">
+                                    <strong>Thư viện kiến thức</strong>
+                                    <span>Cẩm nang y khoa ngoại tuyến</span>
+                                </div>
+                                <i class="fa-solid fa-chevron-right chevron"></i>
+                            </div>
+                            <div class="menu-item" onclick="openModule('reminders')">
+                                <div class="menu-icon icon-water"><i class="fa-solid fa-bell"></i></div>
+                                <div class="menu-info">
+                                    <strong>Trung tâm nhắc nhở</strong>
+                                    <span>Báo thức uống nước, thuốc, chu kỳ, nhật ký</span>
+                                </div>
+                                <i class="fa-solid fa-chevron-right chevron"></i>
+                            </div>
+                            <div class="menu-item" onclick="openModule('settings')">
+                                <div class="menu-icon icon-dark"><i class="fa-solid fa-gear"></i></div>
+                                <div class="menu-info">
+                                    <strong>Cài đặt &amp; Mã PIN</strong>
+                                    <span>Khóa ứng dụng, đổi giao diện, sao lưu</span>
+                                </div>
+                                <i class="fa-solid fa-chevron-right chevron"></i>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Floating Action Button (Only on Journal Tab) -->
+                <button id="btn-fab-add" class="fab-btn" onclick="openJournalModal()">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
+
+                <!-- Bottom Navigation Bar (5 tabs) -->
+                <nav class="bottom-nav">
+                    <button class="nav-item active" onclick="switchTab('home')">
+                        <i class="fa-regular fa-sun"></i>
+                        <span>Hôm nay</span>
+                    </button>
+                    <button class="nav-item" onclick="switchTab('calendar')">
+                        <i class="fa-regular fa-calendar"></i>
+                        <span>Lịch</span>
+                    </button>
+                    <button class="nav-item" onclick="switchTab('journal')">
+                        <i class="fa-regular fa-note-sticky"></i>
+                        <span>Nhật ký</span>
+                    </button>
+                    <button class="nav-item" onclick="switchTab('reports')">
+                        <i class="fa-solid fa-chart-simple"></i>
+                        <span>Báo cáo</span>
+                    </button>
+                    <button class="nav-item" onclick="switchTab('utilities')">
+                        <i class="fa-solid fa-shapes"></i>
+                        <span>Tiện ích</span>
+                    </button>
+                </nav>
+
+                <!-- PIN LOCK OVERLAY SCREEN -->
+                <div id="pin-lock-overlay" class="lock-overlay hidden">
+                    <div class="lock-container">
+                        <div class="lock-icon-wrap">
+                            <i class="fa-solid fa-lock"></i>
+                        </div>
+                        <h2>Khóa An Nhiên</h2>
+                        <p class="lock-sub">Bảo vệ thông tin sức khỏe của bạn</p>
+                        
+                        <div class="pin-dots">
+                            <span class="pin-dot" id="dot-0"></span>
+                            <span class="pin-dot" id="dot-1"></span>
+                            <span class="pin-dot" id="dot-2"></span>
+                            <span class="pin-dot" id="dot-3"></span>
+                        </div>
+                        <p id="lock-error" class="lock-error"></p>
+
+                        <div class="pin-keypad">
+                            <button onclick="pressKey('1')">1</button>
+                            <button onclick="pressKey('2')">2</button>
+                            <button onclick="pressKey('3')">3</button>
+                            <button onclick="pressKey('4')">4</button>
+                            <button onclick="pressKey('5')">5</button>
+                            <button onclick="pressKey('6')">6</button>
+                            <button onclick="pressKey('7')">7</button>
+                            <button onclick="pressKey('8')">8</button>
+                            <button onclick="pressKey('9')">9</button>
+                            <button onclick="unlockBiometric()"><i class="fa-solid fa-fingerprint"></i></button>
+                            <button onclick="pressKey('0')">0</button>
+                            <button onclick="deleteKey()"><i class="fa-solid fa-delete-left"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- JOURNAL ENTRY MODAL -->
+                <div id="journal-modal" class="modal-backdrop hidden">
+                    <div class="modal-sheet">
+                        <div class="modal-header">
+                            <h3>Ghi nhật ký sức khỏe</h3>
+                            <button class="btn-close" onclick="closeJournalModal()"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                        <div class="modal-body">
+                            <label class="input-label">Triệu chứng thể chất hôm nay</label>
+                            <div class="chips-cloud" id="symptoms-chips">
+                                <span class="chip" onclick="toggleChip(this)">Đau bụng dưới</span>
+                                <span class="chip" onclick="toggleChip(this)">Đau lưng</span>
+                                <span class="chip" onclick="toggleChip(this)">Căng tức ngực</span>
+                                <span class="chip" onclick="toggleChip(this)">Mệt mỏi</span>
+                                <span class="chip" onclick="toggleChip(this)">Đau đầu</span>
+                                <span class="chip" onclick="toggleChip(this)">Đầy hơi</span>
+                                <span class="chip" onclick="toggleChip(this)">Nổi mụn</span>
+                                <span class="chip" onclick="toggleChip(this)">Mất ngủ</span>
+                                <span class="chip" onclick="toggleChip(this)">Thèm đồ ngọt</span>
+                            </div>
+
+                            <label class="input-label">Đời sống tình dục &amp; Tránh thai</label>
+                            <div class="chips-cloud" id="intimacy-chips">
+                                <span class="chip" onclick="toggleChip(this)"><i class="fa-solid fa-shield-heart"></i> Có dùng bao cao su</span>
+                                <span class="chip" onclick="toggleChip(this)"><i class="fa-solid fa-heart"></i> Không bảo vệ</span>
+                                <span class="chip" onclick="toggleChip(this)"><i class="fa-solid fa-pills"></i> Đã uống thuốc khẩn cấp</span>
+                                <span class="chip" onclick="toggleChip(this)"><i class="fa-solid fa-fire"></i> Ham muốn cao</span>
+                                <span class="chip" onclick="toggleChip(this)"><i class="fa-solid fa-ban"></i> Không quan hệ</span>
+                            </div>
+
+                            <label class="input-label">Chất nhầy cổ tử cung (Cửa sổ rụng trứng)</label>
+                            <div class="chips-cloud" id="mucus-chips">
+                                <span class="chip" onclick="toggleChip(this)">Khô ráo</span>
+                                <span class="chip" onclick="toggleChip(this)">Dính đục</span>
+                                <span class="chip" onclick="toggleChip(this)">Dạng kem</span>
+                                <span class="chip" onclick="toggleChip(this)"><i class="fa-solid fa-egg"></i> Lòng trắng trứng dai (Rụng trứng)</span>
+                            </div>
+
+                            <label class="input-label">Mức độ tâm trạng (1-5)</label>
+                            <div class="slider-row">
+                                <span>Rất tệ</span>
+                                <input type="range" id="mood-slider" min="1" max="5" value="3">
+                                <span>Rất vui</span>
+                            </div>
+
+                            <label class="input-label">Thời gian ngủ</label>
+                            <div class="slider-row">
+                                <input type="range" id="sleep-slider" min="3" max="12" step="0.5" value="7" oninput="updateSleepLabel(this.value)">
+                                <span id="sleep-label" class="badge-num">7.0 giờ</span>
+                            </div>
+
+                            <label class="input-label">Ghi chú riêng tư</label>
+                            <textarea id="journal-note-input" class="text-area" placeholder="Hôm nay cơ thể bạn cảm thấy thế nào..."></textarea>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn-primary" onclick="saveJournalEntry()">Lưu nhật ký</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MODULE DETAIL MODAL (Chuyên Đề Chi Tiết) -->
+                <div id="module-modal" class="modal-backdrop hidden">
+                    <div class="modal-sheet modal-fullscreen">
+                        <div class="modal-header">
+                            <h3 id="module-title">Tên chuyên đề</h3>
+                            <button class="btn-close" onclick="closeModuleModal()"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                        <div class="modal-body" id="module-body">
+                            <!-- Injected dynamically based on module -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CALCULATOR CAMOUFLAGE OVERLAY -->
+                <div id="calculator-overlay" class="calc-disguise hidden">
+                    <div class="calc-screen">
+                        <span id="calc-expression" class="calc-sub"></span>
+                        <span id="calc-display" class="calc-main">0</span>
+                    </div>
+                    <div class="calc-keypad">
+                        <button class="calc-key op-key" onclick="pressCalc('C')">C</button>
+                        <button class="calc-key op-key" onclick="pressCalc('+/-')">±</button>
+                        <button class="calc-key op-key" onclick="pressCalc('%')">%</button>
+                        <button class="calc-key op-key orange" onclick="pressCalc('/')">÷</button>
+
+                        <button class="calc-key" onclick="pressCalc('7')">7</button>
+                        <button class="calc-key" onclick="pressCalc('8')">8</button>
+                        <button class="calc-key" onclick="pressCalc('9')">9</button>
+                        <button class="calc-key op-key orange" onclick="pressCalc('*')">×</button>
+
+                        <button class="calc-key" onclick="pressCalc('4')">4</button>
+                        <button class="calc-key" onclick="pressCalc('5')">5</button>
+                        <button class="calc-key" onclick="pressCalc('6')">6</button>
+                        <button class="calc-key op-key orange" onclick="pressCalc('-')">−</button>
+
+                        <button class="calc-key" onclick="pressCalc('1')">1</button>
+                        <button class="calc-key" onclick="pressCalc('2')">2</button>
+                        <button class="calc-key" onclick="pressCalc('3')">3</button>
+                        <button class="calc-key op-key orange" onclick="pressCalc('+')">+</button>
+
+                        <button class="calc-key zero" onclick="pressCalc('0')">0</button>
+                        <button class="calc-key" onclick="pressCalc('.')">.</button>
+                        <button class="calc-key op-key orange" onclick="pressCalc('=')">=</button>
+                    </div>
+                    <div class="calc-hint">
+                        <small>Mẹo ngụy trang: Nhập mã PIN (1234) rồi nhấn "=" để mở An Nhiên</small>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Backup rules for An Nhiên.
+    Sensitive data is excluded from cloud backup to protect user privacy.
+    Users should use the in-app encrypted backup feature instead.
+-->
+<full-backup-content>
+    <!-- Exclude the entire database directory (contains health data) -->
+    <exclude domain="database" path="." />
+    <!-- Exclude DataStore preferences (may contain PIN hash, settings) -->
+    <exclude domain="file" path="datastore" />
+    <!-- Exclude attachment files -->
+    <exclude domain="file" path="attachments" />
+    <!-- Exclude backup files -->
+    <exclude domain="file" path="backups" />
+    <!-- Exclude SQLCipher key material -->
+    <exclude domain="sharedpref" path="." />
+</full-backup-content>

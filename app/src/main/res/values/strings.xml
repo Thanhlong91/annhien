@@ -1,0 +1,70 @@
+<resources>
+    <string name="app_name">An Nhiên</string>
+    <string name="app_tagline">Chăm sóc sức khỏe phụ nữ an toàn và riêng tư</string>
+
+    <!-- Navigation Tabs -->
+    <string name="nav_home">Hôm nay</string>
+    <string name="nav_calendar">Lịch</string>
+    <string name="nav_journal">Nhật ký</string>
+    <string name="nav_reports">Báo cáo</string>
+    <string name="nav_utilities">Tiện ích</string>
+
+    <!-- Common Actions -->
+    <string name="action_save">Lưu</string>
+    <string name="action_cancel">Hủy</string>
+    <string name="action_delete">Xóa</string>
+    <string name="action_edit">Chỉnh sửa</string>
+    <string name="action_confirm">Xác nhận</string>
+    <string name="action_continue">Tiếp tục</string>
+    <string name="action_start">Bắt đầu</string>
+    <string name="action_skip">Bỏ qua</string>
+    <string name="action_back">Quay lại</string>
+    <string name="action_done">Hoàn thành</string>
+    <string name="action_close">Đóng</string>
+    <string name="action_export">Xuất dữ liệu</string>
+    <string name="action_import">Khôi phục</string>
+    <string name="action_share">Chia sẻ</string>
+    <string name="action_reset">Đặt lại</string>
+
+    <!-- Life Stages -->
+    <string name="stage_general">Chăm sóc chung</string>
+    <string name="stage_cycle_tracking">Theo dõi chu kỳ kinh nguyệt</string>
+    <string name="stage_conception_prep">Chuẩn bị mang thai</string>
+    <string name="stage_pregnancy">Đang mang thai</string>
+    <string name="stage_postpartum">Sau sinh</string>
+    <string name="stage_perimenopause">Tiền mãn kinh &amp; Mãn kinh</string>
+
+    <!-- Modules -->
+    <string name="module_cycle">Chu kỳ kinh nguyệt</string>
+    <string name="module_conception">Kế hoạch mang thai</string>
+    <string name="module_pregnancy">Theo dõi thai kỳ</string>
+    <string name="module_postpartum">Phục hồi sau sinh</string>
+    <string name="module_perimenopause">Tiền mãn kinh</string>
+    <string name="module_daily_health">Sức khỏe mỗi ngày</string>
+    <string name="module_relaxation">Thư giãn &amp; Hơi thở</string>
+    <string name="module_medical_records">Sổ khám &amp; Hồ sơ y tế</string>
+
+    <!-- Cycle & Fertility -->
+    <string name="cycle_day_format">Ngày %1$d của chu kỳ</string>
+    <string name="cycle_predicted_period">Dự đoán kỳ kinh tiếp theo</string>
+    <string name="cycle_flow_light">Kinh ít</string>
+    <string name="cycle_flow_medium">Kinh vừa</string>
+    <string name="cycle_flow_heavy">Kinh nhiều</string>
+    <string name="cycle_flow_spotting">Ra máu lốm đốm</string>
+    <string name="fertility_pending_approval">Tính năng ước tính đang chờ thẩm định y khoa</string>
+    <string name="fertility_disclaimer">Dự đoán chỉ có tính tham khảo, hoàn toàn không được dùng để tránh thai tự nhiên.</string>
+
+    <!-- App Lock & Security -->
+    <string name="lock_title">Khóa ứng dụng</string>
+    <string name="lock_enter_pin">Nhập mã PIN</string>
+    <string name="lock_setup_pin">Thiết lập mã PIN mới</string>
+    <string name="lock_confirm_pin">Xác nhận lại mã PIN</string>
+    <string name="lock_pin_mismatch">Mã PIN xác nhận không khớp</string>
+    <string name="lock_use_biometric">Sử dụng vân tay / khuôn mặt</string>
+    <string name="lock_biometric_prompt">Mở khóa An Nhiên</string>
+    <string name="lock_biometric_subtitle">Dùng sinh trắc học để bảo vệ dữ liệu sức khỏe của bạn</string>
+
+    <!-- Disclaimers -->
+    <string name="medical_disclaimer_title">Lưu ý quan trọng về y tế</string>
+    <string name="medical_disclaimer_content">An Nhiên là công cụ ghi chép và tự theo dõi cá nhân. Ứng dụng không đưa ra chẩn đoán, không kê đơn và không thay thế ý kiến tư vấn từ bác sĩ chuyên khoa.</string>
+</resources>
