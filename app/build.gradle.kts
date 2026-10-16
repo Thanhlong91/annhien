@@ -25,9 +25,6 @@ android {
             arg("room.schemaLocation", "$projectDir/schemas")
             arg("room.incremental", "true")
         }
-        // Backup rules — exclude sensitive data from cloud backup
-        resValue("xml", "backup_rules", "@xml/backup_rules")
-        resValue("xml", "data_extraction_rules", "@xml/data_extraction_rules")
     }
 
     buildTypes {
