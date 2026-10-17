@@ -30,6 +30,7 @@ import com.annhien.womenshealth.core.ratelimit.RateLimitState
 fun OnlineUtilitiesScreen(
     onNavigateToFoodSearch: () -> Unit,
     onNavigateToHealthTopics: () -> Unit,
+    onNavigateToAirQuality: (Double, Double) -> Unit,
     viewModel: OnlineUtilitiesViewModel = hiltViewModel()
 ) {
     val utilities by viewModel.utilities.collectAsState()
@@ -61,6 +62,18 @@ fun OnlineUtilitiesScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text("Kiến thức sức khỏe")
+                }
+            }
+
+            item {
+                Button(
+                    onClick = {
+                        // Default location for now; replace with a location permission flow later.
+                        onNavigateToAirQuality(21.0278, 105.8342)
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Chất lượng không khí")
                 }
             }
 

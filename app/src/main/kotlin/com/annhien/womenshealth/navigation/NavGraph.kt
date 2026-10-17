@@ -29,6 +29,7 @@ import com.annhien.womenshealth.feature.knowledge.KnowledgeScreen
 import com.annhien.womenshealth.feature.medicalrecords.MedicalRecordsScreen
 import com.annhien.womenshealth.feature.onboarding.LifeStageSelectionScreen
 import com.annhien.womenshealth.feature.onboarding.WelcomeScreen
+import com.annhien.womenshealth.feature.online.environment.AirQualityScreen
 import com.annhien.womenshealth.feature.online.food.FoodSearchScreen
 import com.annhien.womenshealth.feature.online.health.HealthTopicsScreen
 import com.annhien.womenshealth.feature.perimenopause.PerimenopauseModuleScreen
@@ -175,6 +176,9 @@ fun MainNavGraph(
                 },
                 onNavigateToHealthTopics = {
                     navController.navigate(Screen.HealthTopics.route)
+                },
+                onNavigateToAirQuality = { latitude, longitude ->
+                    navController.navigate(Screen.AirQuality.createRoute(latitude, longitude))
                 }
             )
         }
@@ -185,6 +189,23 @@ fun MainNavGraph(
 
         composable(Screen.HealthTopics.route) {
             HealthTopicsScreen(onNavigateBack = { navController.popBackStack() })
+        }
+
+        composable(
+            route = Screen.AirQuality.route,
+            arguments = listOf(
+                navArgument("latitude") { type = NavType.StringType },
+                navArgument("longitude") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val latitude = backStackEntry.arguments?.getString("latitude")?.toDoubleOrNull() ?: 21.0278
+            val longitude = backStackEntry.arguments?.getString("longitude")?.toDoubleOrNull() ?: 105.8342
+
+            AirQualityScreen(
+                latitude = latitude,
+                longitude = longitude,
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
 
         composable(Screen.ReminderCenter.route) {

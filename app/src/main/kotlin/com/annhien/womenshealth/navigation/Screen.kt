@@ -76,6 +76,10 @@ sealed class Screen(val route: String) {
     // ─── Online utilities ──────────────────────────────────────────────
     object FoodSearch : Screen("online/food_search")
     object HealthTopics : Screen("online/health_topics")
+    object AirQuality : Screen("online/air_quality?latitude={latitude}&longitude={longitude}") {
+        fun createRoute(latitude: Double, longitude: Double) =
+            "online/air_quality?latitude=$latitude&longitude=$longitude"
+    }
 }
 
 // Bottom navigation items
