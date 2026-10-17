@@ -9,19 +9,6 @@ import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
 
-/**
- * Manages encryption keys via Android Keystore.
- *
- * Security design:
- * - The database passphrase is generated randomly and stored encrypted
- *   in the Keystore under a hardware-backed key when available.
- * - PIN reinforcement: the stored passphrase can be additionally
- *   wrapped with a PBKDF2 key derived from the user's PIN, so
- *   even if the Keystore key is extracted, the passphrase is
- *   still protected by the PIN.
- * - No PIN or passphrase is ever stored in plaintext.
- * - No secrets are hardcoded.
- */
 class KeystoreManager(private val context: Context) {
 
     companion object {
@@ -34,8 +21,6 @@ class KeystoreManager(private val context: Context) {
         private const val ENCRYPTED_PASSPHRASE_PREFS = "annhien_sec"
         private const val PREF_KEY_ENCRYPTED_PASSPHRASE = "ep_v1"
         private const val PREF_KEY_IV = "ep_iv_v1"
-
-        // Database passphrase length (bytes, before hex encoding)
         private const val PASSPHRASE_BYTE_LENGTH = 32
     }
 
@@ -44,43 +29,40 @@ class KeystoreManager(private val context: Context) {
     }
 
     private val prefs by lazy {
-        // EncryptedSharedPreferences would be ideal, but we control
-        // the encryption manually using Keystore + AES-GCM
         context.getSharedPreferences(ENCRYPTED_PASSPHRASE_PREFS, Context.MODE_PRIVATE)
     }
 
-    /**
-     * Gets or creates the database passphrase.
-     * The passphrase is:
-     * 1. Generated once using SecureRandom
-     * 2. Encrypted with a Keystore-backed AES-GCM key
-     * 3. Stored encrypted in SharedPreferences
-     * 4. Never returned in plaintext except as ByteArray for Room/SQLCipher
-     */
     fun getDatabasePassphrase(): ByteArray {
-        return try {
-            val encrypted = prefs.getString(PREF_KEY_ENCRYPTED_PASSPHRASE, null)
-            val iv = prefs.getString(PREF_KEY_IV, null)
+        val encrypted = prefs.getString(PREF_KEY_ENCRYPTED_PASSPHRASE, null)
+        val iv = prefs.getString(PREF_KEY_IV, null)
 
-            if (encrypted != null && iv != null) {
-                decryptPassphrase(
-                    encryptedBytes = android.util.Base64.decode(encrypted, android.util.Base64.DEFAULT),
-                    ivBytes = android.util.Base64.decode(iv, android.util.Base64.DEFAULT)
-                )
-            } else {
-                generateAndStorePassphrase()
-            }
-        } catch (e: Exception) {
-            try {
-                prefs.edit().clear().apply()
-                generateAndStorePassphrase()
-            } catch (ex: Exception) {
-                // Safeguard in-memory fallback
-                ByteArray(PASSPHRASE_BYTE_LENGTH).apply {
-                    java.security.SecureRandom().nextBytes(this)
-                }
-            }
+        if (encrypted == null || iv == null) {
+            return generateAndStorePassphrase()
         }
+
+        val key = getKey(KEY_ALIAS_DB)
+            ?: throw SecurityException("Không tìm thấy khóa bảo vệ cơ sở dữ liệu. Không thể tự tạo khóa mới vì có thể làm mất dữ liệu hiện có.")
+
+        return try {
+            decryptPassphrase(
+                encryptedBytes = android.util.Base64.decode(encrypted, android.util.Base64.DEFAULT),
+                ivBytes = android.util.Base64.decode(iv, android.util.Base64.DEFAULT)
+            )
+        } catch (e: Exception) {
+            throw SecurityException("Không thể giải mã khóa cơ sở dữ liệu. Không tự xóa hoặc tạo khóa thay thế.", e)
+        }
+    }
+
+    fun importDatabasePassphrase(passphrase: ByteArray) {
+        require(passphrase.size == PASSPHRASE_BYTE_LENGTH) {
+            "Độ dài passphrase không hợp lệ"
+        }
+        ensureKeyExists(KEY_ALIAS_DB)
+        val (encrypted, iv) = encryptBytes(passphrase, KEY_ALIAS_DB)
+        prefs.edit()
+            .putString(PREF_KEY_ENCRYPTED_PASSPHRASE, android.util.Base64.encodeToString(encrypted, android.util.Base64.DEFAULT))
+            .putString(PREF_KEY_IV, android.util.Base64.encodeToString(iv, android.util.Base64.DEFAULT))
+            .apply()
     }
 
     private fun generateAndStorePassphrase(): ByteArray {
@@ -96,14 +78,8 @@ class KeystoreManager(private val context: Context) {
     }
 
     private fun decryptPassphrase(encryptedBytes: ByteArray, ivBytes: ByteArray): ByteArray {
-        val key = getKey(KEY_ALIAS_DB) ?: run {
-            // Key lost (e.g., device factory reset) — passphrase is unrecoverable
-            // Clear stored ciphertext and generate fresh (data loss scenario)
-            prefs.edit().clear().apply()
-            return generateAndStorePassphrase()
-        }
         val cipher = Cipher.getInstance(AES_GCM_TRANSFORMATION)
-        cipher.init(Cipher.DECRYPT_MODE, key, GCMParameterSpec(GCM_TAG_LENGTH, ivBytes))
+        cipher.init(Cipher.DECRYPT_MODE, getKey(KEY_ALIAS_DB), GCMParameterSpec(GCM_TAG_LENGTH, ivBytes))
         return cipher.doFinal(encryptedBytes)
     }
 
@@ -129,7 +105,7 @@ class KeystoreManager(private val context: Context) {
                 .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
                 .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
                 .setKeySize(256)
-                .setUserAuthenticationRequired(false) // Key accessible without auth for DB unlock
+                .setUserAuthenticationRequired(false)
                 .build()
         )
         return keyGen.generateKey()
@@ -141,27 +117,20 @@ class KeystoreManager(private val context: Context) {
         } else null
     }
 
-    /**
-     * Encrypt data for file attachment storage.
-     * Returns: EncryptedData containing ciphertext + IV
-     */
     fun encryptFileData(plaintext: ByteArray): EncryptedData {
         ensureKeyExists(KEY_ALIAS_DB)
         val (ciphertext, iv) = encryptBytes(plaintext, KEY_ALIAS_DB)
         return EncryptedData(ciphertext = ciphertext, iv = iv)
     }
 
-    /**
-     * Decrypt previously encrypted file data.
-     */
     fun decryptFileData(encryptedData: EncryptedData): ByteArray {
-        return decryptPassphrase(encryptedData.ciphertext, encryptedData.iv)
+        val key = getKey(KEY_ALIAS_DB)
+            ?: throw SecurityException("Không tìm thấy khóa bảo vệ tệp đính kèm")
+        val cipher = Cipher.getInstance(AES_GCM_TRANSFORMATION)
+        cipher.init(Cipher.DECRYPT_MODE, key, GCMParameterSpec(GCM_TAG_LENGTH, encryptedData.iv))
+        return cipher.doFinal(encryptedData.ciphertext)
     }
 
-    /**
-     * Checks whether the Keystore key is still accessible.
-     * Returns false if key was invalidated (e.g., biometric change).
-     */
     fun isKeyAccessible(): Boolean {
         return try {
             getKey(KEY_ALIAS_DB) != null

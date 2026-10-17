@@ -39,13 +39,14 @@ class BackupManager @Inject constructor(
     private val keystoreManager: KeystoreManager
 ) {
     companion object {
-        private const val BACKUP_VERSION = 1
+        private const val BACKUP_VERSION = 2
         private const val PBKDF2_ITERATIONS = 100_000
         private const val KEY_LENGTH_BITS = 256
         private const val GCM_IV_LENGTH = 12
         private const val GCM_TAG_LENGTH = 128
         private const val MANIFEST_NAME = "manifest.json"
         private const val DATABASE_BACKUP_NAME = "database.enc"
+        private const val DATABASE_PASSPHRASE_NAME = "database-passphrase.enc"
         private const val HMAC_NAME = "integrity.hmac"
     }
 
@@ -56,12 +57,10 @@ class BackupManager @Inject constructor(
                 return@withContext BackupResult.Error("Cơ sở dữ liệu không tồn tại để sao lưu")
             }
 
-            // 1. Generate salt and derive encryption key
             val salt = ByteArray(16)
             SecureRandom().nextBytes(salt)
             val key = deriveKey(password, salt)
 
-            // 2. Encrypt database file using AES-256-GCM
             val iv = ByteArray(GCM_IV_LENGTH)
             SecureRandom().nextBytes(iv)
             val cipher = Cipher.getInstance("AES/GCM/NoPadding")
@@ -70,31 +69,37 @@ class BackupManager @Inject constructor(
             val dbBytes = dbFile.readBytes()
             val encryptedDb = cipher.doFinal(dbBytes)
 
-            // 3. Create Manifest JSON
+            val dbPassphrase = keystoreManager.getDatabasePassphrase()
+            val passphraseIv = ByteArray(GCM_IV_LENGTH)
+            SecureRandom().nextBytes(passphraseIv)
+            val passphraseCipher = Cipher.getInstance("AES/GCM/NoPadding")
+            passphraseCipher.init(Cipher.ENCRYPT_MODE, key, GCMParameterSpec(GCM_TAG_LENGTH, passphraseIv))
+            val encryptedPassphrase = passphraseCipher.doFinal(dbPassphrase)
+
             val manifestJson = JSONObject().apply {
                 put("version", BACKUP_VERSION)
                 put("createdAt", Instant.now().toString())
                 put("appVersion", "1.0.0")
                 put("saltBase64", android.util.Base64.encodeToString(salt, android.util.Base64.NO_WRAP))
                 put("ivBase64", android.util.Base64.encodeToString(iv, android.util.Base64.NO_WRAP))
+                put("passphraseIvBase64", android.util.Base64.encodeToString(passphraseIv, android.util.Base64.NO_WRAP))
             }.toString()
 
-            // 4. Calculate HMAC-SHA256 for integrity check
-            val hmac = calculateHmac(key, encryptedDb)
+            val hmac = calculateHmac(key, encryptedDb + encryptedPassphrase)
 
-            // 5. Package into encrypted ZIP
             ZipOutputStream(BufferedOutputStream(FileOutputStream(destinationFile))).use { zos ->
-                // Manifest
                 zos.putNextEntry(ZipEntry(MANIFEST_NAME))
                 zos.write(manifestJson.toByteArray(StandardCharsets.UTF_8))
                 zos.closeEntry()
 
-                // Encrypted Database
                 zos.putNextEntry(ZipEntry(DATABASE_BACKUP_NAME))
                 zos.write(encryptedDb)
                 zos.closeEntry()
 
-                // HMAC
+                zos.putNextEntry(ZipEntry(DATABASE_PASSPHRASE_NAME))
+                zos.write(encryptedPassphrase)
+                zos.closeEntry()
+
                 zos.putNextEntry(ZipEntry(HMAC_NAME))
                 zos.write(hmac)
                 zos.closeEntry()
@@ -114,22 +119,17 @@ class BackupManager @Inject constructor(
 
             var manifestStr: String? = null
             var encryptedDb: ByteArray? = null
+            var encryptedPassphrase: ByteArray? = null
             var readHmac: ByteArray? = null
 
-            // Read entries from ZIP
             ZipInputStream(BufferedInputStream(FileInputStream(backupFile))).use { zis ->
                 var entry = zis.nextEntry
                 while (entry != null) {
                     when (entry.name) {
-                        MANIFEST_NAME -> {
-                            manifestStr = zis.readBytes().toString(StandardCharsets.UTF_8)
-                        }
-                        DATABASE_BACKUP_NAME -> {
-                            encryptedDb = zis.readBytes()
-                        }
-                        HMAC_NAME -> {
-                            readHmac = zis.readBytes()
-                        }
+                        MANIFEST_NAME -> manifestStr = zis.readBytes().toString(StandardCharsets.UTF_8)
+                        DATABASE_BACKUP_NAME -> encryptedDb = zis.readBytes()
+                        DATABASE_PASSPHRASE_NAME -> encryptedPassphrase = zis.readBytes()
+                        HMAC_NAME -> readHmac = zis.readBytes()
                     }
                     zis.closeEntry()
                     entry = zis.nextEntry
@@ -141,31 +141,49 @@ class BackupManager @Inject constructor(
             }
 
             val manifest = JSONObject(manifestStr!!)
+            val version = manifest.optInt("version", 0)
+            if (version != BACKUP_VERSION) {
+                return@withContext RestoreResult.Error("Phiên bản tệp sao lưu không được hỗ trợ")
+            }
+
             val salt = android.util.Base64.decode(manifest.getString("saltBase64"), android.util.Base64.NO_WRAP)
             val iv = android.util.Base64.decode(manifest.getString("ivBase64"), android.util.Base64.NO_WRAP)
-
             val key = deriveKey(password, salt)
 
-            // Verify HMAC integrity
-            val expectedHmac = calculateHmac(key, encryptedDb!!)
+            val hmacInput = if (encryptedPassphrase != null) {
+                encryptedDb!! + encryptedPassphrase!!
+            } else {
+                encryptedDb!!
+            }
+            val expectedHmac = calculateHmac(key, hmacInput)
             if (!expectedHmac.contentEquals(readHmac!!)) {
                 return@withContext RestoreResult.Error("Mật khẩu không đúng hoặc tệp sao lưu đã bị chỉnh sửa")
             }
 
-            // Decrypt database bytes
             val cipher = Cipher.getInstance("AES/GCM/NoPadding")
             cipher.init(Cipher.DECRYPT_MODE, key, GCMParameterSpec(GCM_TAG_LENGTH, iv))
             val decryptedDb = cipher.doFinal(encryptedDb)
 
-            // Atomic staging swap
+            val passphrase = if (encryptedPassphrase != null) {
+                val passphraseIv = android.util.Base64.decode(
+                    manifest.getString("passphraseIvBase64"),
+                    android.util.Base64.NO_WRAP
+                )
+                val passphraseCipher = Cipher.getInstance("AES/GCM/NoPadding")
+                passphraseCipher.init(Cipher.DECRYPT_MODE, key, GCMParameterSpec(GCM_TAG_LENGTH, passphraseIv))
+                passphraseCipher.doFinal(encryptedPassphrase)
+            } else {
+                keystoreManager.getDatabasePassphrase()
+            }
+
             val dbFile = context.getDatabasePath(AnNhienDatabase.DATABASE_NAME)
             val stagingFile = File(context.filesDir, "database_staging.db")
             stagingFile.writeBytes(decryptedDb)
 
             if (stagingFile.exists() && stagingFile.length() > 0) {
-                // Atomic replace
                 stagingFile.copyTo(dbFile, overwrite = true)
                 stagingFile.delete()
+                keystoreManager.importDatabasePassphrase(passphrase)
             }
 
             RestoreResult.Success(1, "Khôi phục dữ liệu thành công. Vui lòng khởi động lại ứng dụng.")
