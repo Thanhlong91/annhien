@@ -29,6 +29,8 @@ import com.annhien.womenshealth.feature.knowledge.KnowledgeScreen
 import com.annhien.womenshealth.feature.medicalrecords.MedicalRecordsScreen
 import com.annhien.womenshealth.feature.onboarding.LifeStageSelectionScreen
 import com.annhien.womenshealth.feature.onboarding.WelcomeScreen
+import com.annhien.womenshealth.feature.online.food.FoodSearchScreen
+import com.annhien.womenshealth.feature.online.health.HealthTopicsScreen
 import com.annhien.womenshealth.feature.perimenopause.PerimenopauseModuleScreen
 import com.annhien.womenshealth.feature.postpartum.PostpartumModuleScreen
 import com.annhien.womenshealth.feature.pregnancy.PregnancyModuleScreen
@@ -167,7 +169,22 @@ fun MainNavGraph(
         }
 
         composable(Screen.OnlineUtilities.route) {
-            OnlineUtilitiesScreen()
+            OnlineUtilitiesScreen(
+                onNavigateToFoodSearch = {
+                    navController.navigate(Screen.FoodSearch.route)
+                },
+                onNavigateToHealthTopics = {
+                    navController.navigate(Screen.HealthTopics.route)
+                }
+            )
+        }
+
+        composable(Screen.FoodSearch.route) {
+            FoodSearchScreen(onNavigateBack = { navController.popBackStack() })
+        }
+
+        composable(Screen.HealthTopics.route) {
+            HealthTopicsScreen(onNavigateBack = { navController.popBackStack() })
         }
 
         composable(Screen.ReminderCenter.route) {

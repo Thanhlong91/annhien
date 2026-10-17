@@ -72,6 +72,10 @@ sealed class Screen(val route: String) {
     object PrivacyPolicy : Screen("settings/privacy")
     object ReminderCenter : Screen("settings/reminders_center")
     object OnlineUtilities : Screen("settings/online_utilities")
+
+    // ─── Online utilities ──────────────────────────────────────────────
+    object FoodSearch : Screen("online/food_search")
+    object HealthTopics : Screen("online/health_topics")
 }
 
 // Bottom navigation items
