@@ -263,6 +263,58 @@ fun UtilitiesScreen(
                 }
             }
 
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // 4. Tiện ích trực tuyến (Tùy chọn kết nối)
+            Text(
+                text = "Tiện ích trực tuyến",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+            ) {
+                Column {
+                    UtilityItemRow(
+                        title = "Tra cứu dinh dưỡng thực phẩm",
+                        subtitle = "Tra cứu calo, dưỡng chất qua Open Food Facts",
+                        icon = Icons.Default.Restaurant,
+                        colorCategory = UtilityColorCategory.WATER,
+                        onClick = { onNavigateToRoute(Screen.FoodSearch.route) }
+                    )
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f), modifier = Modifier.padding(start = 74.dp, end = 16.dp))
+                    UtilityItemRow(
+                        title = "Đề tài sức khỏe phụ nữ",
+                        subtitle = "Cẩm nang y tế từ MyHealthfinder v4",
+                        icon = Icons.Default.HealthAndSafety,
+                        colorCategory = UtilityColorCategory.ROSE,
+                        onClick = { onNavigateToRoute(Screen.HealthTopics.route) }
+                    )
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f), modifier = Modifier.padding(start = 74.dp, end = 16.dp))
+                    UtilityItemRow(
+                        title = "Chất lượng không khí (OpenAQ)",
+                        subtitle = "Theo dõi trạm quan trắc không khí gần bạn",
+                        icon = Icons.Default.Cloud,
+                        colorCategory = UtilityColorCategory.SAGE,
+                        onClick = { onNavigateToRoute(Screen.AirQuality.createRoute(21.0278, 105.8342)) }
+                    )
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f), modifier = Modifier.padding(start = 74.dp, end = 16.dp))
+                    UtilityItemRow(
+                        title = "Quản lý tiện ích trực tuyến",
+                        subtitle = "Bật/tắt nguồn dữ liệu, quản lý hạn mức & cache",
+                        icon = Icons.Default.Public,
+                        colorCategory = UtilityColorCategory.SUN,
+                        onClick = { onNavigateToRoute(Screen.OnlineUtilities.route) }
+                    )
+                }
+            }
+
             Spacer(modifier = Modifier.height(28.dp))
         }
     }
