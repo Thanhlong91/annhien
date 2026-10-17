@@ -42,6 +42,7 @@ import com.annhien.womenshealth.feature.postpartum.KegelScreen
 import com.annhien.womenshealth.feature.reminders.ReminderCenterScreen
 import com.annhien.womenshealth.feature.settings.BackupRestoreScreen
 import com.annhien.womenshealth.feature.settings.SettingsScreen
+import com.annhien.womenshealth.feature.settings.online.OnlineUtilitiesScreen
 import com.annhien.womenshealth.feature.utilities.UtilitiesScreen
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -160,6 +161,10 @@ fun MainNavGraph(
                 context = context,
                 onNavigateBack = { navController.popBackStack() }
             )
+        }
+
+        composable(Screen.OnlineUtilities.route) {
+            OnlineUtilitiesScreen()
         }
 
         composable(Screen.ReminderCenter.route) {

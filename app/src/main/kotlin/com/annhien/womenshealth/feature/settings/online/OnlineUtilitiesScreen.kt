@@ -12,11 +12,13 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -27,7 +29,7 @@ import com.annhien.womenshealth.core.ratelimit.RateLimitState
 fun OnlineUtilitiesScreen(
     viewModel: OnlineUtilitiesViewModel = hiltViewModel()
 ) {
-    val statuses by viewModel.statuses.collectAsState()
+    val utilities by viewModel.utilities.collectAsState()
 
     Scaffold(
         topBar = {
@@ -41,13 +43,12 @@ fun OnlineUtilitiesScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            items(OnlineUtilityCatalog.utilities) { utility ->
-                val status = statuses[utility.sourceId]
+            items(utilities, key = { it.sourceId }) { utility ->
                 OnlineUtilityCard(
-                    title = utility.titleVi,
-                    description = utility.descriptionVi,
-                    state = status?.state ?: RateLimitState.AVAILABLE,
-                    message = status?.message
+                    utility = utility,
+                    onToggle = { enabled ->
+                        viewModel.setEnabled(utility.sourceId, enabled)
+                    }
                 )
             }
         }
@@ -56,38 +57,46 @@ fun OnlineUtilitiesScreen(
 
 @Composable
 private fun OnlineUtilityCard(
-    title: String,
-    description: String,
-    state: RateLimitState,
-    message: String?
+    utility: OnlineUtilityUiState,
+    onToggle: (Boolean) -> Unit
 ) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            Text(text = title, style = MaterialTheme.typography.titleMedium)
-            Text(text = description, style = MaterialTheme.typography.bodyMedium)
-
-            val stateText = when (state) {
-                RateLimitState.AVAILABLE -> "Khả dụng"
-                RateLimitState.LIMITED -> "Đã đạt giới hạn"
-                RateLimitState.DISABLED -> "Không khả dụng"
-            }
-
-            Row {
-                Text(
-                    text = stateText,
-                    style = MaterialTheme.typography.labelLarge,
-                    color = when (state) {
-                        RateLimitState.AVAILABLE -> MaterialTheme.colorScheme.primary
-                        RateLimitState.LIMITED -> MaterialTheme.colorScheme.error
-                        RateLimitState.DISABLED -> MaterialTheme.colorScheme.outline
-                    }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(text = utility.titleVi, style = MaterialTheme.typography.titleMedium)
+                    Text(text = utility.descriptionVi, style = MaterialTheme.typography.bodyMedium)
+                }
+                Switch(
+                    checked = utility.isEnabled,
+                    onCheckedChange = onToggle
                 )
             }
 
-            message?.let {
+            val stateText = when {
+                !utility.isEnabled -> "Đã tắt"
+                utility.status.state == RateLimitState.LIMITED -> "Đã đạt giới hạn"
+                utility.status.state == RateLimitState.DISABLED -> "Không khả dụng"
+                else -> "Khả dụng"
+            }
+
+            Text(
+                text = stateText,
+                style = MaterialTheme.typography.labelLarge,
+                color = when {
+                    !utility.isEnabled -> MaterialTheme.colorScheme.outline
+                    utility.status.state == RateLimitState.LIMITED -> MaterialTheme.colorScheme.error
+                    else -> MaterialTheme.colorScheme.primary
+                }
+            )
+
+            utility.status.message?.let {
                 Text(text = it, style = MaterialTheme.typography.bodySmall)
             }
         }
