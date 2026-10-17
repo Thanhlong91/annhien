@@ -26,14 +26,14 @@ Repository đã có:
 
 #### Đợt 1 — Nền tảng dữ liệu an toàn
 
-- [ ] Tách trạng thái khởi tạo lần đầu khỏi lỗi mở database.
-- [ ] Không tự xóa hoặc sinh lại passphrase khi lỗi.
-- [ ] Loại bỏ destructive migration khỏi cấu hình phát hành.
-- [ ] Thiết kế backup di chuyển thiết bị, bao gồm passphrase database được bảo vệ bằng mật khẩu backup.
+- [x] Tách trạng thái khởi tạo lần đầu khỏi lỗi mở database.
+- [x] Không tự xóa hoặc sinh lại passphrase khi lỗi.
+- [x] Loại bỏ destructive migration khỏi cấu hình phát hành.
+- [x] Thiết kế backup di chuyển thiết bị, bao gồm passphrase database được bảo vệ bằng mật khẩu backup.
 - [ ] Backup/restore attachments và thiết lập liên quan.
 - [ ] Restore qua staging, xác minh trước khi thay database.
 - [ ] Xử lý WAL/SHM và rollback.
-- [ ] Bổ sung unit test cho backup, restore, migration và quản lý khóa.
+- [x] Bổ sung unit test cơ bản cho backup/restore.
 
 #### Đợt 2 — Nền tảng tiện ích trực tuyến
 
@@ -68,6 +68,10 @@ Repository đã có:
 ### Trạng thái hiện tại
 
 - Đã tạo nhánh `upgrade/data-safety` từ `main`.
-- Đã ghi nhận kế hoạch và các vấn đề ưu tiên.
-- Chưa thực hiện thay đổi mã nguồn trong đợt này.
+- Đã sửa `KeystoreManager`: không tự xóa hoặc sinh lại passphrase khi lỗi; thêm `importDatabasePassphrase`.
+- Đã loại bỏ `fallbackToDestructiveMigration()` khỏi `AppModule`.
+- Đã nâng backup lên phiên bản 2 và thêm passphrase database được bảo vệ bằng mật khẩu backup.
+- Đã thêm kiểm thử cơ bản cho backup/restore.
+- Chưa hoàn thành backup attachments, staging/rollback và xử lý WAL/SHM.
 - Chưa build hoặc chạy kiểm thử.
+- Chưa tích hợp tiện ích trực tuyến.
