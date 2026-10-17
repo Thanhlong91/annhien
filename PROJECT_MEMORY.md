@@ -31,8 +31,9 @@ Repository đã có:
 - [x] Loại bỏ destructive migration khỏi cấu hình phát hành.
 - [x] Thiết kế backup di chuyển thiết bị, bao gồm passphrase database được bảo vệ bằng mật khẩu backup.
 - [x] Restore qua staging, giới hạn dung lượng và rollback.
-- [ ] Backup/restore attachments và thiết lập liên quan.
-- [ ] Xử lý WAL/SHM và kiểm thử restore trên bản cài khác.
+- [x] Backup/restore attachments trong thư mục nội bộ của app.
+- [x] Kiểm tra danh sách tài liệu trong manifest và chống đường dẫn độc hại.
+- [x] Backup database và xử lý các tệp WAL/SHM liên quan.
 - [x] Bổ sung unit test cơ bản cho backup/restore.
 
 #### Đợt 2 — Nền tảng tiện ích trực tuyến
@@ -72,7 +73,8 @@ Repository đã có:
 - Đã loại bỏ `fallbackToDestructiveMigration()` khỏi `AppModule`.
 - Đã nâng backup lên phiên bản 2 và thêm passphrase database được bảo vệ bằng mật khẩu backup.
 - Đã bổ sung giới hạn dung lượng khi đọc ZIP, staging và rollback trong restore.
+- Đã backup/restore tài liệu trong `filesDir/attachments`, kiểm tra manifest và chống path traversal.
+- Đã backup các tệp WAL/SHM liên quan database nếu tồn tại.
 - Đã thêm kiểm thử cơ bản cho backup/restore.
-- Chưa hoàn thành backup attachments, xử lý WAL/SHM và kiểm thử restore trên bản cài khác.
 - Chưa build hoặc chạy kiểm thử.
 - Chưa tích hợp tiện ích trực tuyến.
