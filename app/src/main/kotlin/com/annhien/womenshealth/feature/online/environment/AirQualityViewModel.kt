@@ -3,12 +3,17 @@ package com.annhien.womenshealth.feature.online.environment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.annhien.womenshealth.core.connectivity.OnlineResult
+import com.annhien.womenshealth.core.location.LocationData
+import com.annhien.womenshealth.core.location.LocationProvider
 import com.annhien.womenshealth.core.online.environment.OpenAqLocation
 import com.annhien.womenshealth.core.online.environment.OpenAqRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -25,7 +30,8 @@ sealed interface AirQualityUiState {
 
 @HiltViewModel
 class AirQualityViewModel @Inject constructor(
-    private val repository: OpenAqRepository
+    private val repository: OpenAqRepository,
+    private val locationProvider: LocationProvider
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<AirQualityUiState>(AirQualityUiState.Idle)
@@ -56,5 +62,27 @@ class AirQualityViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    fun loadNearbyLocationsUsingDeviceLocation() {
+        if (!locationProvider.hasLocationPermission()) {
+            _uiState.value = AirQualityUiState.Error(
+                message = "Cần quyền vị trí để tìm khu vực quan sát gần bạn."
+            )
+            return
+        }
+
+        _uiState.value = AirQualityUiState.Loading
+
+        locationProvider.currentLocation()
+            .catch { throwable ->
+                _uiState.value = AirQualityUiState.Error(
+                    message = throwable.message ?: "Không thể xác định vị trí hiện tại."
+                )
+            }
+            .onEach { location: LocationData ->
+                loadNearbyLocations(location.latitude, location.longitude)
+            }
+            .launchIn(viewModelScope)
     }
 }
