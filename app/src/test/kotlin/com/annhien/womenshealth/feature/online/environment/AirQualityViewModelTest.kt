@@ -9,6 +9,7 @@ import com.annhien.womenshealth.core.online.environment.OpenAqRepository
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -129,9 +130,12 @@ class AirQualityViewModelTest {
     @Test
     fun `loadNearbyLocationsUsingDeviceLocation emits error when location stream fails`() = runTest {
         every { locationProvider.hasLocationPermission() } returns true
+
         every {
             locationProvider.currentLocation()
-        } throws SecurityException("Location permission is not granted")
+        } returns flow {
+            throw SecurityException("Location permission is not granted")
+        }
 
         viewModel.uiState.test {
             viewModel.loadNearbyLocationsUsingDeviceLocation()
