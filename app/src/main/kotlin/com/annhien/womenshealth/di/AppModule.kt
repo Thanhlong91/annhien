@@ -55,7 +55,6 @@ object AppModule {
             AnNhienDatabase.DATABASE_NAME
         )
             .openHelperFactory(factory)
-            .fallbackToDestructiveMigration()
             .build()
     }
 
@@ -64,7 +63,6 @@ object AppModule {
     fun provideDateTimeProvider(): DateTimeProvider = SystemDateTimeProvider()
 
     // ─── DAOs ─────────────────────────────────────────────────────────────
-
     @Provides fun provideUserProfileDao(db: AnNhienDatabase) = db.userProfileDao()
     @Provides fun provideLifeStageHistoryDao(db: AnNhienDatabase) = db.lifeStageHistoryDao()
     @Provides fun provideModulePreferenceDao(db: AnNhienDatabase) = db.modulePreferenceDao()
@@ -84,7 +82,7 @@ object AppModule {
     @Provides fun providePostpartumProfileDao(db: AnNhienDatabase) = db.postpartumProfileDao()
     @Provides fun provideFeedingEntryDao(db: AnNhienDatabase) = db.feedingEntryDao()
     @Provides fun provideDailyHabitDao(db: AnNhienDatabase) = db.dailyHabitDao()
-    @Provides fun provideHabitLogDao(db: AnNhienDatabase) = db.habitLogDao()
+    @Provides fun provideHabitLogDao(db: AnNhienDatabase) = db.dailyHabitDao()
     @Provides fun provideRelaxationSessionDao(db: AnNhienDatabase) = db.relaxationSessionDao()
     @Provides fun provideMedicalVisitDao(db: AnNhienDatabase) = db.medicalVisitDao()
     @Provides fun provideMedicalDocumentDao(db: AnNhienDatabase) = db.medicalDocumentDao()
