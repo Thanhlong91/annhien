@@ -1,5 +1,6 @@
 package com.annhien.womenshealth.core.online.environment
 
+import com.annhien.womenshealth.BuildConfig
 import com.annhien.womenshealth.core.connectivity.OnlineGateway
 import com.annhien.womenshealth.core.connectivity.OnlineResult
 import java.time.Duration
@@ -21,6 +22,10 @@ class OpenAqRepository @Inject constructor(
         latitude: Double,
         longitude: Double
     ): OnlineResult<List<OpenAqLocation>> {
+        if (BuildConfig.OPENAQ_API_KEY.isBlank()) {
+            return OnlineResult.Error.InvalidApiKey
+        }
+
         val coordinates = "$latitude,$longitude"
 
         return gateway.execute(

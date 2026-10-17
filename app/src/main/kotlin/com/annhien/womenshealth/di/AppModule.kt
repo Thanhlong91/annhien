@@ -82,7 +82,7 @@ object AppModule {
     @Provides fun providePostpartumProfileDao(db: AnNhienDatabase) = db.postpartumProfileDao()
     @Provides fun provideFeedingEntryDao(db: AnNhienDatabase) = db.feedingEntryDao()
     @Provides fun provideDailyHabitDao(db: AnNhienDatabase) = db.dailyHabitDao()
-    @Provides fun provideHabitLogDao(db: AnNhienDatabase) = db.dailyHabitDao()
+    @Provides fun provideHabitLogDao(db: AnNhienDatabase) = db.habitLogDao()
     @Provides fun provideRelaxationSessionDao(db: AnNhienDatabase) = db.relaxationSessionDao()
     @Provides fun provideMedicalVisitDao(db: AnNhienDatabase) = db.medicalVisitDao()
     @Provides fun provideMedicalDocumentDao(db: AnNhienDatabase) = db.medicalDocumentDao()

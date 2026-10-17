@@ -7,6 +7,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertFalse
@@ -106,9 +107,10 @@ class LocationProviderTest {
         } returns PackageManager.PERMISSION_DENIED
 
         val result = runCatching {
-            locationProvider.currentLocation()
+            locationProvider.currentLocation().first()
         }
 
         assertTrue(result.isFailure)
+        assertTrue(result.exceptionOrNull() is SecurityException)
     }
 }

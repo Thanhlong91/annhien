@@ -9,36 +9,49 @@ import com.annhien.womenshealth.core.online.environment.OpenAqRepository
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
 private val sampleLocation = OpenAqLocation(
-    id = "location-1",
+    id = 1,
     name = "Sample Station",
     country = null,
-    coordinates = null,
-    lastUpdated = null
+    coordinates = null
 )
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class AirQualityViewModelTest {
 
+    private val testDispatcher = StandardTestDispatcher()
     private lateinit var repository: OpenAqRepository
     private lateinit var locationProvider: LocationProvider
     private lateinit var viewModel: AirQualityViewModel
 
     @Before
     fun setUp() {
+        Dispatchers.setMain(testDispatcher)
         repository = mockk()
         locationProvider = mockk()
         viewModel = AirQualityViewModel(
             repository = repository,
             locationProvider = locationProvider
         )
+    }
+
+    @After
+    fun tearDown() {
+        Dispatchers.resetMain()
     }
 
     @Test
@@ -51,7 +64,10 @@ class AirQualityViewModelTest {
         )
 
         viewModel.uiState.test {
+            assertEquals(AirQualityUiState.Idle, awaitItem())
+
             viewModel.loadNearbyLocations(21.0, 105.0)
+            testScheduler.advanceUntilIdle()
 
             assertEquals(AirQualityUiState.Loading, awaitItem())
 
@@ -70,13 +86,16 @@ class AirQualityViewModelTest {
         } returns OnlineResult.Error.Offline
 
         viewModel.uiState.test {
+            assertEquals(AirQualityUiState.Idle, awaitItem())
+
             viewModel.loadNearbyLocations(21.0, 105.0)
+            testScheduler.advanceUntilIdle()
 
             assertEquals(AirQualityUiState.Loading, awaitItem())
 
             val error = awaitItem() as AirQualityUiState.Error
             assertEquals(
-                "Không có kết nối Internet. Vui lòng thử lại khi có mạng.",
+                "Không có kết nối Internet. Vui lòng kiểm tra mạng và thử lại.",
                 error.message
             )
 
@@ -89,7 +108,10 @@ class AirQualityViewModelTest {
         every { locationProvider.hasLocationPermission() } returns false
 
         viewModel.uiState.test {
+            assertEquals(AirQualityUiState.Idle, awaitItem())
+
             viewModel.loadNearbyLocationsUsingDeviceLocation()
+            testScheduler.advanceUntilIdle()
 
             val error = awaitItem() as AirQualityUiState.Error
             assertEquals(
@@ -116,7 +138,10 @@ class AirQualityViewModelTest {
         )
 
         viewModel.uiState.test {
+            assertEquals(AirQualityUiState.Idle, awaitItem())
+
             viewModel.loadNearbyLocationsUsingDeviceLocation()
+            testScheduler.advanceUntilIdle()
 
             assertEquals(AirQualityUiState.Loading, awaitItem())
 
@@ -138,7 +163,10 @@ class AirQualityViewModelTest {
         }
 
         viewModel.uiState.test {
+            assertEquals(AirQualityUiState.Idle, awaitItem())
+
             viewModel.loadNearbyLocationsUsingDeviceLocation()
+            testScheduler.advanceUntilIdle()
 
             assertEquals(AirQualityUiState.Loading, awaitItem())
 

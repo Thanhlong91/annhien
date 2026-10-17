@@ -1,7 +1,7 @@
 package com.annhien.womenshealth.core.security
 
-import android.util.Base64
 import java.security.SecureRandom
+import java.util.Base64
 import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.PBEKeySpec
 
@@ -25,6 +25,14 @@ object PinManager {
     private const val KEY_LENGTH = 256 // bits
     private const val SALT_BYTES = 32
 
+    private fun encodeBase64(bytes: ByteArray): String {
+        return Base64.getEncoder().encodeToString(bytes)
+    }
+
+    private fun decodeBase64(str: String): ByteArray {
+        return Base64.getDecoder().decode(str.trim())
+    }
+
     /**
      * Hashes a PIN with a freshly generated salt.
      * @return PinHash containing the Base64-encoded salt and hash
@@ -35,8 +43,8 @@ object PinManager {
         SecureRandom().nextBytes(salt)
         val hash = pbkdf2(pin.toCharArray(), salt)
         return PinHash(
-            saltBase64 = Base64.encodeToString(salt, Base64.DEFAULT),
-            hashBase64 = Base64.encodeToString(hash, Base64.DEFAULT)
+            saltBase64 = encodeBase64(salt),
+            hashBase64 = encodeBase64(hash)
         )
     }
 
@@ -47,11 +55,11 @@ object PinManager {
     fun verifyPin(pin: String, stored: PinHash): Boolean {
         if (pin.length < 4) return false
         return try {
-            val salt = Base64.decode(stored.saltBase64, Base64.DEFAULT)
-            val expectedHash = Base64.decode(stored.hashBase64, Base64.DEFAULT)
+            val salt = decodeBase64(stored.saltBase64)
+            val expectedHash = decodeBase64(stored.hashBase64)
             val actualHash = pbkdf2(pin.toCharArray(), salt)
             constantTimeEquals(expectedHash, actualHash)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             false
         }
     }
@@ -63,10 +71,10 @@ object PinManager {
     fun verifyPin(pin: String, salt: ByteArray, hashBase64: String): Boolean {
         if (pin.length < 4) return false
         return try {
-            val expectedHash = Base64.decode(hashBase64, Base64.DEFAULT)
+            val expectedHash = decodeBase64(hashBase64)
             val actualHash = pbkdf2(pin.toCharArray(), salt)
             constantTimeEquals(expectedHash, actualHash)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             false
         }
     }
@@ -80,7 +88,7 @@ object PinManager {
     /**
      * Constant-time byte array comparison to prevent timing-based PIN extraction.
      */
-    private fun constantTimeEquals(a: ByteArray, b: ByteArray): Boolean {
+    internal fun constantTimeEquals(a: ByteArray, b: ByteArray): Boolean {
         if (a.size != b.size) return false
         var result = 0
         for (i in a.indices) {

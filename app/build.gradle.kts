@@ -25,6 +25,11 @@ android {
             arg("room.schemaLocation", "$projectDir/schemas")
             arg("room.incremental", "true")
         }
+
+        val openAqApiKey: String = (project.findProperty("OPENAQ_API_KEY") as? String)
+            ?: System.getenv("OPENAQ_API_KEY")
+            ?: ""
+        buildConfigField("String", "OPENAQ_API_KEY", "\"$openAqApiKey\"")
     }
 
     buildTypes {
@@ -146,7 +151,7 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.retrofit.kotlinx.serialization)
     implementation(libs.okhttp)
-    implementation(libs.okhttp.logging.interceptor)
+    implementation(libs.okhttp.logging)
 
     // Location
     implementation("com.google.android.gms:play-services-location:21.3.0")

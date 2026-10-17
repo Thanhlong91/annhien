@@ -4,15 +4,28 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class OpenAqLocation(
-    val id: String? = null,
+    val id: Int? = null,
     val name: String? = null,
+    val locality: String? = null,
+    val timezone: String? = null,
     val country: OpenAqCountry? = null,
     val coordinates: OpenAqCoordinates? = null,
-    val lastUpdated: String? = null
+    val datetimeLast: OpenAqDateTime? = null,
+    val sensors: List<OpenAqSensor> = emptyList()
+) {
+    val formattedLastUpdated: String?
+        get() = datetimeLast?.local ?: datetimeLast?.utc
+}
+
+@Serializable
+data class OpenAqDateTime(
+    val utc: String? = null,
+    val local: String? = null
 )
 
 @Serializable
 data class OpenAqCountry(
+    val id: Int? = null,
     val code: String? = null,
     val name: String? = null
 )
@@ -24,6 +37,30 @@ data class OpenAqCoordinates(
 )
 
 @Serializable
+data class OpenAqSensor(
+    val id: Int? = null,
+    val name: String? = null,
+    val parameter: OpenAqParameter? = null
+)
+
+@Serializable
+data class OpenAqParameter(
+    val id: Int? = null,
+    val name: String? = null,
+    val units: String? = null,
+    val displayName: String? = null
+)
+
+@Serializable
+data class OpenAqMeta(
+    val name: String? = null,
+    val page: Int? = null,
+    val limit: Int? = null,
+    val found: Int? = null
+)
+
+@Serializable
 data class OpenAqResultsResponse(
+    val meta: OpenAqMeta? = null,
     val results: List<OpenAqLocation> = emptyList()
 )

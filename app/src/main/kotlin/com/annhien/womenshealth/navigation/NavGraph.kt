@@ -11,7 +11,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.font.FontWeight
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.*
+import androidx.navigation.navArgument
 import com.annhien.womenshealth.core.backup.BackupManager
 import com.annhien.womenshealth.core.preferences.AppPreferences
 import com.annhien.womenshealth.domain.model.LifeStage

@@ -2,6 +2,10 @@ package com.annhien.womenshealth.core.connectivity
 
 import com.annhien.womenshealth.core.cache.OnlineCacheManager
 import com.annhien.womenshealth.core.ratelimit.RateLimitManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import retrofit2.HttpException
+import java.io.IOException
 import java.time.Duration
 import java.time.Instant
 import javax.inject.Inject
@@ -14,12 +18,12 @@ class OnlineGateway @Inject constructor(
     private val cacheManager: OnlineCacheManager
 ) {
 
-    fun <T> execute(
+    suspend fun <T> execute(
         sourceId: String,
         cacheKey: String,
         ttl: Duration? = null,
         now: Instant = Instant.now(),
-        fetch: () -> T
+        fetch: suspend () -> T
     ): OnlineResult<T> {
         if (!connectivityChecker.isOnline()) {
             return OnlineResult.Error.Offline
@@ -37,10 +41,30 @@ class OnlineGateway @Inject constructor(
         }
 
         return try {
-            val data = fetch()
+            val data = withContext(Dispatchers.IO) {
+                fetch()
+            }
             cacheManager.put(cacheKey, data, ttl, now)
             rateLimitManager.markAvailable(sourceId)
             OnlineResult.Success(data)
+        } catch (e: HttpException) {
+            when (e.code()) {
+                401, 403 -> OnlineResult.Error.InvalidApiKey
+                404 -> OnlineResult.Error.NotFound
+                429 -> {
+                    val retryAfterSeconds = e.response()?.headers()?.get("Retry-After")?.toLongOrNull()
+                    rateLimitManager.markLimitedFromHttp(
+                        sourceId = sourceId,
+                        retryAfterSeconds = retryAfterSeconds,
+                        now = now
+                    )
+                    OnlineResult.Error.RateLimited
+                }
+                in 500..599 -> OnlineResult.Error.ServiceUnavailable
+                else -> OnlineResult.Error.Unknown("Lỗi kết nối máy chủ (${e.code()}): ${e.message()}")
+            }
+        } catch (e: IOException) {
+            OnlineResult.Error.Offline
         } catch (e: Exception) {
             OnlineResult.Error.Unknown(e.message)
         }

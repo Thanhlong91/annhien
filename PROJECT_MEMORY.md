@@ -75,6 +75,14 @@ Repository đã có:
 - Đã bổ sung giới hạn dung lượng khi đọc ZIP, staging và rollback trong restore.
 - Đã backup/restore tài liệu trong `filesDir/attachments`, kiểm tra manifest và chống path traversal.
 - Đã backup các tệp WAL/SHM liên quan database nếu tồn tại.
-- Đã thêm kiểm thử cơ bản cho backup/restore.
-- Chưa build hoặc chạy kiểm thử.
-- Chưa tích hợp tiện ích trực tuyến.
+- Đã chuẩn hóa nền tảng tiện ích trực tuyến:
+  - `OnlineGateway`: đổi sang `suspend`, xử lý `withContext(Dispatchers.IO)`, ánh xạ mã HTTP lỗi 401/403/404/429/5xx chuẩn và gọi `RateLimitManager.markLimitedFromHttp`.
+  - `OnlineCacheManager`: bổ sung type-safety (`getTyped`, `@PublishedApi`), bọc an toàn tránh runtime cast crash và hỗ trợ serialization JSON.
+  - `OpenAQ`: cấu trúc lại model theo OpenAQ v3 (`id: Int`, `datetimeLast`, `meta`), kiểm tra `OPENAQ_API_KEY.isBlank()` không gửi header rỗng, trả lỗi tiếng Việt chuẩn.
+  - `MyHealthfinder`: cập nhật v4 itemlist làm nguồn chính, giữ fallback v3 tương thích ngược.
+  - `OpenFoodFacts`: cấu hình User-Agent định danh theo chính sách Open Food Facts.
+  - Đã sửa lỗi Version Catalog (`compose-animation`, `hilt-compiler`), lỗi typo DI `provideHabitLogDao`.
+- Đã chạy kiểm thử thành công:
+  - `:app:compileDebugKotlin` thành công 100%.
+  - `:app:testDebugUnitTest` chạy 69/69 unit tests thành công 100%.
+  - `:app:assembleDebug` đóng gói APK thành công.

@@ -23,7 +23,10 @@ class MyHealthfinderRepository @Inject constructor(
             cacheKey = "myhealthfinder_topics_${topicId ?: "all"}",
             ttl = Duration.ofHours(CACHE_TTL_HOURS)
         ) {
-            api.getTopics(topicId = topicId).Result?.Resources?.Resource.orEmpty()
+            val result = api.getTopics(topicId = topicId).Result
+            val items = result?.Items?.Item
+            val resources = result?.Resources?.Resource
+            (items ?: resources).orEmpty()
         }
     }
 }

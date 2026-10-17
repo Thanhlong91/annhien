@@ -16,9 +16,18 @@ object OpenFoodFactsModule {
     @Provides
     @Singleton
     fun provideOpenFoodFactsApi(networkModule: NetworkModule): OpenFoodFactsApi {
+        val client = networkModule.provideOkHttpClient().newBuilder()
+            .addInterceptor { chain ->
+                val request = chain.request().newBuilder()
+                    .header("User-Agent", "AnNhien/1.0 (Android; contact@annhien.app)")
+                    .build()
+                chain.proceed(request)
+            }
+            .build()
+
         val retrofit = networkModule.provideRetrofit(
             baseUrl = BASE_URL,
-            client = networkModule.provideOkHttpClient()
+            client = client
         )
         return retrofit.create(OpenFoodFactsApi::class.java)
     }

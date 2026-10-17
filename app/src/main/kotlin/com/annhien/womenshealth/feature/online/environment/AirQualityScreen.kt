@@ -138,16 +138,22 @@ fun AirQualityScreen(
                         LazyColumn(
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            items(state.locations, key = { it.id ?: it.name ?: "" }) { location ->
+                            items(state.locations, key = { it.id?.toString() ?: (it.name ?: "") }) { location ->
                                 Card(modifier = Modifier.fillMaxWidth()) {
                                     Column(
                                         modifier = Modifier.padding(16.dp),
                                         verticalArrangement = Arrangement.spacedBy(6.dp)
                                     ) {
                                         Text(
-                                            text = location.name ?: "Khu vực quan sát",
+                                            text = location.name ?: "Trạm quan trắc không khí",
                                             style = MaterialTheme.typography.titleMedium
                                         )
+                                        location.locality?.let {
+                                            Text(
+                                                text = "Khu vực: $it",
+                                                style = MaterialTheme.typography.bodySmall
+                                            )
+                                        }
                                         location.country?.name?.let {
                                             Text(
                                                 text = "Quốc gia: $it",
@@ -160,7 +166,7 @@ fun AirQualityScreen(
                                                 style = MaterialTheme.typography.bodySmall
                                             )
                                         }
-                                        location.lastUpdated?.let {
+                                        location.formattedLastUpdated?.let {
                                             Text(
                                                 text = "Cập nhật: $it",
                                                 style = MaterialTheme.typography.bodySmall

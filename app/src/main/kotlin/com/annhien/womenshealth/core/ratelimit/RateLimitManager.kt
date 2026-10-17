@@ -55,6 +55,24 @@ class RateLimitManager @Inject constructor() {
         )
     }
 
+    fun markLimitedFromHttp(
+        sourceId: String,
+        retryAfterSeconds: Long? = null,
+        message: String? = null,
+        now: Instant = Instant.now()
+    ) {
+        val resetAt = if (retryAfterSeconds != null && retryAfterSeconds > 0) {
+            now.plusSeconds(retryAfterSeconds)
+        } else {
+            now.plusSeconds(3600) // Giới hạn mặc định 1 giờ nếu không có Retry-After
+        }
+        markLimited(
+            sourceId = sourceId,
+            resetAt = resetAt,
+            message = message ?: "Tiện ích đã đạt giới hạn sử dụng (HTTP 429). Vui lòng thử lại sau."
+        )
+    }
+
     fun canUse(sourceId: String, now: Instant = Instant.now()): Boolean {
         val status = getStatus(sourceId)
         return when (status.state) {
@@ -62,7 +80,7 @@ class RateLimitManager @Inject constructor() {
             RateLimitState.DISABLED -> false
             RateLimitState.LIMITED -> {
                 val resetAt = status.resetAt
-                resetAt == null || now.isAfter(resetAt)
+                resetAt != null && now.isAfter(resetAt)
             }
         }
     }

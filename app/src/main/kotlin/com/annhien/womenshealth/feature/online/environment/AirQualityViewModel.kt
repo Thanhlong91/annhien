@@ -51,11 +51,11 @@ class AirQualityViewModel @Inject constructor(
                 is OnlineResult.Error -> {
                     _uiState.value = AirQualityUiState.Error(
                         message = when (result) {
-                            OnlineResult.Error.Offline -> "Không có kết nối Internet. Vui lòng thử lại khi có mạng."
-                            OnlineResult.Error.RateLimited -> "Tiện ích này đã đạt giới hạn sử dụng. Vui lòng thử lại sau."
-                            OnlineResult.Error.InvalidApiKey -> "Khóa API không hợp lệ."
-                            OnlineResult.Error.NotFound -> "Không tìm thấy khu vực quan sát không khí gần bạn."
-                            OnlineResult.Error.ServiceUnavailable -> "Dịch vụ đang tạm thời không khả dụng."
+                            OnlineResult.Error.Offline -> "Không có kết nối Internet. Vui lòng kiểm tra mạng và thử lại."
+                            OnlineResult.Error.RateLimited -> "Tiện ích đã đạt giới hạn yêu cầu (Rate Limited). Vui lòng thử lại sau."
+                            OnlineResult.Error.InvalidApiKey -> "Chưa cấu hình API Key hoặc API Key OpenAQ không hợp lệ. Vui lòng kiểm tra lại cấu hình."
+                            OnlineResult.Error.NotFound -> "Không tìm thấy trạm quan trắc không khí nào gần tọa độ này."
+                            OnlineResult.Error.ServiceUnavailable -> "Dịch vụ OpenAQ đang tạm thời không khả dụng. Vui lòng thử lại sau."
                             is OnlineResult.Error.Unknown -> result.message ?: "Không thể tải dữ liệu chất lượng không khí."
                         }
                     )

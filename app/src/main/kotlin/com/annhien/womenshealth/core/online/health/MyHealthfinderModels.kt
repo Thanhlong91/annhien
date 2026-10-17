@@ -5,24 +5,35 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class MyHealthfinderTopic(
-    val id: String? = null,
-    val title: String? = null,
-    @SerialName("last_updated") val lastUpdated: String? = null,
-    val url: String? = null,
-    val summary: String? = null
+    @SerialName("Id") val id: String? = null,
+    @SerialName("Title") val title: String? = null,
+    @SerialName("Type") val type: String? = null,
+    @SerialName("ParentId") val parentId: String? = null,
+    @SerialName("TranslationId") val translationId: String? = null,
+    @SerialName("LastUpdate") val lastUpdated: String? = null,
+    @SerialName("AccessibleVersion") val url: String? = null,
+    @SerialName("Categories") val summary: String? = null
 )
 
 @Serializable
 data class MyHealthfinderResponse(
-    val Result: MyHealthfinderResult? = null
+    @SerialName("Result") val Result: MyHealthfinderResult? = null
 )
 
 @Serializable
 data class MyHealthfinderResult(
-    val Resources: MyHealthfinderResources? = null
+    @SerialName("Error") val Error: String? = null,
+    @SerialName("Total") val Total: Int? = null,
+    @SerialName("Items") val Items: MyHealthfinderItems? = null,
+    @SerialName("Resources") val Resources: MyHealthfinderResources? = null
+)
+
+@Serializable
+data class MyHealthfinderItems(
+    @SerialName("Item") val Item: List<MyHealthfinderTopic> = emptyList()
 )
 
 @Serializable
 data class MyHealthfinderResources(
-    val Resource: List<MyHealthfinderTopic> = emptyList()
+    @SerialName("Resource") val Resource: List<MyHealthfinderTopic> = emptyList()
 )
