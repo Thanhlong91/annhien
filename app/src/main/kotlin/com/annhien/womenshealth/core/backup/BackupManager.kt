@@ -6,6 +6,7 @@ import com.annhien.womenshealth.core.security.KeystoreManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
@@ -33,7 +34,7 @@ sealed class BackupResult {
 }
 
 sealed class RestoreResult {
-    data class Success(val recordCount: Int, val message: String) : RestoreResult()
+    data class Success(val restoredFileCount: Int, val message: String) : RestoreResult()
     data class Error(val cause: String) : RestoreResult()
 }
 
@@ -52,6 +53,7 @@ class BackupManager @Inject constructor(
         private const val DATABASE_BACKUP_NAME = "database.enc"
         private const val DATABASE_PASSPHRASE_NAME = "database-passphrase.enc"
         private const val HMAC_NAME = "integrity.hmac"
+        private const val ATTACHMENTS_PREFIX = "attachments/"
         private const val MAX_BACKUP_BYTES = 512L * 1024L * 1024L
     }
 
@@ -81,6 +83,10 @@ class BackupManager @Inject constructor(
             passphraseCipher.init(Cipher.ENCRYPT_MODE, key, GCMParameterSpec(GCM_TAG_LENGTH, passphraseIv))
             val encryptedPassphrase = passphraseCipher.doFinal(dbPassphrase)
 
+            val attachmentDir = File(context.filesDir, "attachments")
+            val attachments = attachmentDir.listFilesRecursively()
+            val attachmentEntries = attachments.map { it.relativeTo(context.filesDir).invariantSeparatorsPath }
+
             val manifestJson = JSONObject().apply {
                 put("version", BACKUP_VERSION)
                 put("createdAt", Instant.now().toString())
@@ -88,9 +94,11 @@ class BackupManager @Inject constructor(
                 put("saltBase64", android.util.Base64.encodeToString(salt, android.util.Base64.NO_WRAP))
                 put("ivBase64", android.util.Base64.encodeToString(iv, android.util.Base64.NO_WRAP))
                 put("passphraseIvBase64", android.util.Base64.encodeToString(passphraseIv, android.util.Base64.NO_WRAP))
+                put("attachments", JSONArray(attachmentEntries))
             }.toString()
 
-            val hmac = calculateHmac(key, encryptedDb + encryptedPassphrase)
+            val hmacInput = encryptedDb + encryptedPassphrase
+            val hmac = calculateHmac(key, hmacInput)
 
             ZipOutputStream(BufferedOutputStream(FileOutputStream(destinationFile))).use { zos ->
                 zos.putNextEntry(ZipEntry(MANIFEST_NAME))
@@ -108,9 +116,18 @@ class BackupManager @Inject constructor(
                 zos.putNextEntry(ZipEntry(HMAC_NAME))
                 zos.write(hmac)
                 zos.closeEntry()
+
+                attachments.forEach { file ->
+                    val relativePath = file.relativeTo(context.filesDir).invariantSeparatorsPath
+                    zos.putNextEntry(ZipEntry(relativePath))
+                    file.inputStream().use { input ->
+                        input.copyTo(zos, 64 * 1024)
+                    }
+                    zos.closeEntry()
+                }
             }
 
-            BackupResult.Success(destinationFile, "Sao lưu dữ liệu ngoại tuyến thành công")
+            BackupResult.Success(destinationFile, "Sao lưu dữ liệu và tài liệu thành công")
         } catch (e: Exception) {
             BackupResult.Error("Lỗi tạo sao lưu: ${e.localizedMessage}")
         }
@@ -126,16 +143,18 @@ class BackupManager @Inject constructor(
             var encryptedDb: ByteArray? = null
             var encryptedPassphrase: ByteArray? = null
             var readHmac: ByteArray? = null
+            val attachmentEntries = mutableMapOf<String, ByteArray>()
 
             ZipInputStream(BufferedInputStream(FileInputStream(backupFile))).use { zis ->
                 var entry = zis.nextEntry
                 while (entry != null) {
                     val entryBytes = readEntrySafely(zis)
-                    when (entry.name) {
-                        MANIFEST_NAME -> manifestStr = entryBytes.toString(StandardCharsets.UTF_8)
-                        DATABASE_BACKUP_NAME -> encryptedDb = entryBytes
-                        DATABASE_PASSPHRASE_NAME -> encryptedPassphrase = entryBytes
-                        HMAC_NAME -> readHmac = entryBytes
+                    when {
+                        entry.name == MANIFEST_NAME -> manifestStr = entryBytes.toString(StandardCharsets.UTF_8)
+                        entry.name == DATABASE_BACKUP_NAME -> encryptedDb = entryBytes
+                        entry.name == DATABASE_PASSPHRASE_NAME -> encryptedPassphrase = entryBytes
+                        entry.name == HMAC_NAME -> readHmac = entryBytes
+                        entry.name.startsWith(ATTACHMENTS_PREFIX) -> attachmentEntries[entry.name] = entryBytes
                     }
                     zis.closeEntry()
                     entry = zis.nextEntry
@@ -150,6 +169,14 @@ class BackupManager @Inject constructor(
             val version = manifest.optInt("version", 0)
             if (version != BACKUP_VERSION) {
                 return@withContext RestoreResult.Error("Phiên bản tệp sao lưu không được hỗ trợ")
+            }
+
+            val expectedAttachments = manifest.optJSONArray("attachments")
+                ?.let { array -> (0 until array.length()).map { array.getString(it) } }
+                .orEmpty()
+
+            if (attachmentEntries.keys.toSet() != expectedAttachments.toSet()) {
+                return@withContext RestoreResult.Error("Danh sách tài liệu trong tệp sao lưu không khớp")
             }
 
             val salt = android.util.Base64.decode(manifest.getString("saltBase64"), android.util.Base64.NO_WRAP)
@@ -182,27 +209,53 @@ class BackupManager @Inject constructor(
                 return@withContext RestoreResult.Error("Không thể chuẩn bị dữ liệu khôi phục")
             }
 
-            // Keep the previous database available until the restored copy has been accepted.
             val previousFile = File(context.filesDir, "database_previous.db")
+            val attachmentsDir = File(context.filesDir, "attachments")
+            val attachmentsBackupDir = File(context.filesDir, "attachments_previous")
+
             if (dbFile.exists()) {
                 dbFile.copyTo(previousFile, overwrite = true)
+            }
+            if (attachmentsDir.exists()) {
+                attachmentsDir.copyRecursively(attachmentsBackupDir, overwrite = true)
             }
 
             try {
                 stagingFile.copyTo(dbFile, overwrite = true)
                 keystoreManager.importDatabasePassphrase(restoredPassphrase)
+
+                attachmentsDir.deleteRecursively()
+                attachmentsDir.mkdirs()
+                attachmentEntries.forEach { (zipPath, bytes) ->
+                    val safeRelative = zipPath.removePrefix(ATTACHMENTS_PREFIX)
+                    require(!safeRelative.contains("..") && !safeRelative.startsWith("/")) {
+                        "Đường dẫn tài liệu không hợp lệ"
+                    }
+                    val target = File(context.filesDir, safeRelative)
+                    target.parentFile?.mkdirs()
+                    target.writeBytes(bytes)
+                }
+
                 stagingFile.delete()
                 previousFile.delete()
+                attachmentsBackupDir.deleteRecursively()
             } catch (e: Exception) {
                 if (previousFile.exists()) {
                     previousFile.copyTo(dbFile, overwrite = true)
                     previousFile.delete()
                 }
+                if (attachmentsBackupDir.exists()) {
+                    attachmentsDir.deleteRecursively()
+                    attachmentsBackupDir.renameTo(attachmentsDir)
+                }
                 stagingFile.delete()
                 throw e
             }
 
-            RestoreResult.Success(1, "Khôi phục dữ liệu thành công. Vui lòng khởi động lại ứng dụng.")
+            RestoreResult.Success(
+                restoredFileCount = attachmentEntries.size,
+                message = "Khôi phục dữ liệu và ${attachmentEntries.size} tài liệu thành công. Vui lòng khởi động lại ứng dụng."
+            )
         } catch (e: Exception) {
             RestoreResult.Error("Lỗi khôi phục: Mật khẩu sai hoặc tệp hỏng (${e.localizedMessage})")
         }
@@ -224,6 +277,14 @@ class BackupManager @Inject constructor(
         }
 
         return output.toByteArray()
+    }
+
+    private fun File.listFilesRecursively(): List<File> {
+        return if (!exists()) {
+            emptyList()
+        } else {
+            walkTopDown().filter { it.isFile }.toList()
+        }
     }
 
     private fun deriveKey(password: CharArray, salt: ByteArray): SecretKeySpec {
