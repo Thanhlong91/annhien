@@ -149,6 +149,9 @@ fun MainNavGraph(
             SettingsScreen(
                 appPreferences = appPreferences,
                 onNavigateToBackup = { navController.navigate(Screen.BackupRestore.route) },
+                onNavigateToOnlineUtilities = {
+                    navController.navigate(Screen.OnlineUtilities.route)
+                },
                 onNavigateBack = { navController.popBackStack() },
                 onLockApp = onLockApp
             )

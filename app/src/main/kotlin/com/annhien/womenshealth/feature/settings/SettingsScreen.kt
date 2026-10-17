@@ -32,6 +32,7 @@ import kotlinx.coroutines.launch
 fun SettingsScreen(
     appPreferences: AppPreferences,
     onNavigateToBackup: () -> Unit,
+    onNavigateToOnlineUtilities: () -> Unit,
     onNavigateBack: () -> Unit,
     onLockApp: ((disguise: Boolean) -> Unit)? = null
 ) {
@@ -391,6 +392,42 @@ fun SettingsScreen(
                 }
             }
 
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(20.dp))
+                    .clickable(onClick = onNavigateToOnlineUtilities),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(44.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(MaterialTheme.colorScheme.secondaryContainer),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(Icons.Default.Public, contentDescription = null, tint = MaterialTheme.colorScheme.secondary)
+                    }
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Tiện ích trực tuyến", fontWeight = FontWeight.SemiBold)
+                        Text(
+                            "Bật/tắt tra cứu thực phẩm, kiến thức sức khỏe và chất lượng không khí",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Icon(Icons.Default.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.outline)
+                }
+            }
+
             Spacer(modifier = Modifier.height(24.dp))
 
             // ── 5. CAM KẾT NGOẠI TUYẾN ──
@@ -414,9 +451,10 @@ fun SettingsScreen(
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "• Không quyền INTERNET (100% ngoại tuyến)\n" +
+                        text = "• Lõi sức khỏe hoạt động ngoại tuyến\n" +
                                 "• Mã hóa cơ sở dữ liệu trên thiết bị (SQLCipher)\n" +
                                 "• Không theo dõi, không quảng cáo, không máy chủ từ xa\n" +
+                                "• Tiện ích trực tuyến là tùy chọn và có thể tắt riêng từng nguồn.\n" +
                                 "• Dữ liệu thuộc về bạn duy nhất trên thiết bị này.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
