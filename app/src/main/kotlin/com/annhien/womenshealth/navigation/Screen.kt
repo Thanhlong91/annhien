@@ -71,6 +71,7 @@ sealed class Screen(val route: String) {
     object ModuleSettings : Screen("settings/modules")
     object PrivacyPolicy : Screen("settings/privacy")
     object ReminderCenter : Screen("settings/reminders_center")
+    object OnlineUtilities : Screen("settings/online_utilities")
 }
 
 // Bottom navigation items
