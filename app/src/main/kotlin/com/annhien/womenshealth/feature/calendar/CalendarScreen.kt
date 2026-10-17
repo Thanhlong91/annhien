@@ -5,9 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -38,19 +35,37 @@ fun CalendarScreen(
     val uiState by viewModel.uiState.collectAsState()
     val scrollState = rememberScrollState()
 
+    var showRangeDialog by remember { mutableStateOf(false) }
+    var selectedDurationDays by remember { mutableIntStateOf(5) }
+
     val monthFormatter = remember {
         DateTimeFormatter.ofPattern("'Tháng' M, yyyy", Locale("vi"))
+    }
+
+    val isPeriodSelected = uiState.periodEpisodes.any { ep ->
+        val end = ep.endDate ?: LocalDate.now()
+        !uiState.selectedDate.isBefore(ep.startDate) && !uiState.selectedDate.isAfter(end)
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
-                        text = "Lịch sức khỏe",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = "Lịch sức khỏe",
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Icon(
+                            imageVector = Icons.Default.EventNote,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
             )
@@ -64,27 +79,35 @@ fun CalendarScreen(
                 .padding(horizontal = 16.dp)
                 .verticalScroll(scrollState)
         ) {
-            // Month Selector Bar
+            // Month Selector Bar (Matching Simulator)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 8.dp),
+                    .padding(vertical = 4.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(onClick = { viewModel.previousMonth() }) {
-                    Icon(Icons.Default.ChevronLeft, contentDescription = "Tháng trước")
+                    Surface(shape = CircleShape, color = MaterialTheme.colorScheme.surfaceVariant, modifier = Modifier.size(36.dp)) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(Icons.Default.ChevronLeft, contentDescription = "Tháng trước", tint = MaterialTheme.colorScheme.onSurface)
+                        }
+                    }
                 }
 
                 Text(
                     text = uiState.currentYearMonth.format(monthFormatter),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.ExtraBold,
                     color = MaterialTheme.colorScheme.onBackground
                 )
 
                 IconButton(onClick = { viewModel.nextMonth() }) {
-                    Icon(Icons.Default.ChevronRight, contentDescription = "Tháng sau")
+                    Surface(shape = CircleShape, color = MaterialTheme.colorScheme.surfaceVariant, modifier = Modifier.size(36.dp)) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(Icons.Default.ChevronRight, contentDescription = "Tháng sau", tint = MaterialTheme.colorScheme.onSurface)
+                        }
+                    }
                 }
             }
 
@@ -93,10 +116,11 @@ fun CalendarScreen(
             // Calendar Grid Card
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
             ) {
-                Column(modifier = Modifier.padding(12.dp)) {
+                Column(modifier = Modifier.padding(14.dp)) {
                     // Weekday headers
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -109,13 +133,13 @@ fun CalendarScreen(
                                 style = MaterialTheme.typography.labelMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.width(36.dp),
+                                modifier = Modifier.width(38.dp),
                                 textAlign = TextAlign.Center
                             )
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
 
                     // Calendar month days
                     MonthGrid(
@@ -130,7 +154,7 @@ fun CalendarScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
             // Legend indicators
             Row(
@@ -138,23 +162,101 @@ fun CalendarScreen(
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 LegendItem(color = MaterialTheme.colorScheme.error, label = "Kỳ kinh")
-                LegendItem(color = MaterialTheme.colorScheme.error.copy(alpha = 0.4f), label = "Dự đoán", isBorder = true)
+                LegendItem(color = MaterialTheme.colorScheme.errorContainer, label = "Dự đoán", isBorder = true)
                 LegendItem(color = MaterialTheme.colorScheme.primary, label = "Nhật ký")
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
-            // Day Details Sheet
+            // Day Details Sheet with Easy Period Marking
             DayDetailsCard(
                 selectedDate = uiState.selectedDate,
+                isPeriod = isPeriodSelected,
                 entry = uiState.selectedDayJournalEntry,
                 symptoms = uiState.selectedDaySymptoms,
                 onLogJournal = { onNavigateToJournalEdit(uiState.selectedDate) },
-                onTogglePeriod = { viewModel.togglePeriodOnSelectedDate() }
+                onTogglePeriod = { viewModel.togglePeriodOnSelectedDate() },
+                onOpenRangeDialog = { showRangeDialog = true }
             )
 
             Spacer(modifier = Modifier.height(24.dp))
         }
+    }
+
+    // Range Dialog for recording e.g. 3-7 day period
+    if (showRangeDialog) {
+        val endDate = uiState.selectedDate.plusDays((selectedDurationDays - 1).toLong())
+        val dateFormatter = remember { DateTimeFormatter.ofPattern("d/M/yyyy") }
+
+        AlertDialog(
+            onDismissRequest = { showRangeDialog = false },
+            title = {
+                Text(
+                    text = "Ghi nhận cả kỳ kinh",
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleLarge
+                )
+            },
+            text = {
+                Column {
+                    Text(
+                        text = "Bắt đầu từ: ${uiState.selectedDate.format(dateFormatter)}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = "Kéo dài bao nhiêu ngày?",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        listOf(3, 4, 5, 6, 7).forEach { days ->
+                            FilterChip(
+                                selected = selectedDurationDays == days,
+                                onClick = { selectedDurationDays = days },
+                                label = { Text("${days}d") }
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(14.dp))
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = "Kỳ kinh: ${uiState.selectedDate.format(dateFormatter)}  👉  ${endDate.format(dateFormatter)} ($selectedDurationDays ngày)",
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(12.dp),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.recordPeriodRange(uiState.selectedDate, endDate)
+                        showRangeDialog = false
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                ) {
+                    Text("Lưu kỳ kinh")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showRangeDialog = false }) {
+                    Text("Hủy")
+                }
+            }
+        )
     }
 }
 
@@ -174,7 +276,7 @@ private fun MonthGrid(
 
     val totalCells = ((startDayOfWeek + daysInMonth + 6) / 7) * 7
 
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         for (row in 0 until (totalCells / 7)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -230,21 +332,22 @@ private fun DayCell(
             .background(
                 when {
                     isPeriod -> MaterialTheme.colorScheme.error
+                    isPredicted -> MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.5f)
                     isSelected -> MaterialTheme.colorScheme.primaryContainer
                     else -> Color.Transparent
                 }
             )
             .border(
                 width = when {
+                    isSelected -> 2.dp
                     isToday -> 2.dp
                     isPredicted -> 1.5.dp
-                    isSelected -> 1.5.dp
                     else -> 0.dp
                 },
                 color = when {
-                    isToday -> MaterialTheme.colorScheme.primary
-                    isPredicted -> MaterialTheme.colorScheme.error.copy(alpha = 0.6f)
                     isSelected -> MaterialTheme.colorScheme.primary
+                    isToday -> MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                    isPredicted -> MaterialTheme.colorScheme.error.copy(alpha = 0.5f)
                     else -> Color.Transparent
                 },
                 shape = CircleShape
@@ -255,10 +358,11 @@ private fun DayCell(
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 text = date.dayOfMonth.toString(),
-                fontSize = 13.sp,
-                fontWeight = if (isSelected || isToday) FontWeight.Bold else FontWeight.Normal,
+                fontSize = 14.sp,
+                fontWeight = if (isSelected || isToday || isPeriod) FontWeight.Bold else FontWeight.Medium,
                 color = when {
-                    isPeriod -> MaterialTheme.colorScheme.onError
+                    isPeriod -> Color.White
+                    isPredicted -> MaterialTheme.colorScheme.error
                     isSelected -> MaterialTheme.colorScheme.onPrimaryContainer
                     else -> MaterialTheme.colorScheme.onSurface
                 }
@@ -285,61 +389,128 @@ private fun LegendItem(
     Row(verticalAlignment = Alignment.CenterVertically) {
         Box(
             modifier = Modifier
-                .size(10.dp)
+                .size(12.dp)
                 .clip(CircleShape)
                 .background(if (isBorder) Color.Transparent else color)
-                .border(if (isBorder) 1.5.dp else 0.dp, color, CircleShape)
+                .border(if (isBorder) 2.dp else 0.dp, color, CircleShape)
         )
         Spacer(modifier = Modifier.width(6.dp))
-        Text(text = label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(text = label, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
 @Composable
 private fun DayDetailsCard(
     selectedDate: LocalDate,
+    isPeriod: Boolean,
     entry: com.annhien.womenshealth.domain.model.JournalEntry?,
     symptoms: List<com.annhien.womenshealth.domain.model.SymptomObservation>,
     onLogJournal: () -> Unit,
-    onTogglePeriod: () -> Unit
+    onTogglePeriod: () -> Unit,
+    onOpenRangeDialog: () -> Unit
 ) {
     val formatter = remember {
-        DateTimeFormatter.ofPattern("EEEE, 'ngày' d 'tháng' M", Locale("vi"))
+        DateTimeFormatter.ofPattern("EEEE, 'ngày' d 'tháng' M, yyyy", Locale("vi"))
     }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(18.dp)) {
+            // Header with date & status chip
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = selectedDate.format(formatter),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-
-                TextButton(onClick = onTogglePeriod) {
-                    Text("Đánh dấu kinh nguyệt", fontSize = 12.sp)
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = selectedDate.format(formatter),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    color = if (isPeriod) MaterialTheme.colorScheme.errorContainer
+                    else MaterialTheme.colorScheme.surfaceVariant
+                ) {
+                    Text(
+                        text = if (isPeriod) "🌸 Ngày có kinh" else "⚪ Không có kinh",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = if (isPeriod) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                    )
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
+            // Two Prominent Action Buttons for Period Marking
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Button(
+                    onClick = onTogglePeriod,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (isPeriod) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = if (isPeriod) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+                    ),
+                    shape = RoundedCornerShape(14.dp),
+                    modifier = Modifier.weight(1f).height(46.dp)
+                ) {
+                    Icon(
+                        imageVector = if (isPeriod) Icons.Default.Close else Icons.Default.WaterDrop,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = if (isPeriod) "Hủy ngày kinh" else "Đánh dấu có kinh",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 13.sp
+                    )
+                }
+
+                OutlinedButton(
+                    onClick = onOpenRangeDialog,
+                    shape = RoundedCornerShape(14.dp),
+                    modifier = Modifier.weight(1f).height(46.dp),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.CalendarMonth,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "Đặt nhiều ngày",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 13.sp,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            // Symptoms / Notes info
             if (entry != null || symptoms.isNotEmpty()) {
                 if (symptoms.isNotEmpty()) {
                     Text(
-                        text = "Triệu chứng đã ghi nhận:",
+                        text = "Triệu chứng ghi nhận:",
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.SemiBold
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -347,17 +518,17 @@ private fun DayDetailsCard(
                         symptoms.forEach { obs ->
                             SuggestionChip(
                                 onClick = {},
-                                label = { Text(obs.symptomName) }
+                                label = { Text(obs.symptomName, fontSize = 12.sp) }
                             )
                         }
                     }
                 }
 
                 if (!entry?.note.isNullOrEmpty()) {
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
                     Text(
-                        text = "Ghi chú: ${entry?.note}",
-                        style = MaterialTheme.typography.bodyMedium,
+                        text = "Ghi chú: \"${entry?.note}\"",
+                        style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
@@ -369,16 +540,21 @@ private fun DayDetailsCard(
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
+            // Journal button
             Button(
                 onClick = onLogJournal,
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp)
+                modifier = Modifier.fillMaxWidth().height(44.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    contentColor = MaterialTheme.colorScheme.onSurface
+                )
             ) {
                 Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(16.dp))
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(if (entry != null) "Chỉnh sửa nhật ký" else "Ghi nhật ký ngày này")
+                Text(if (entry != null) "Chỉnh sửa nhật ký" else "Ghi nhật ký ngày này", fontWeight = FontWeight.SemiBold)
             }
         }
     }

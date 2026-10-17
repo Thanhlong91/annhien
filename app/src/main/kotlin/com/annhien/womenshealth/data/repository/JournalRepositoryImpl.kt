@@ -24,13 +24,13 @@ class JournalRepositoryImpl @Inject constructor(
     override fun observeEntriesForMonth(year: Int, month: Int): Flow<List<JournalEntry>> {
         val startDate = LocalDate.of(year, month, 1)
         val endDate = startDate.plusMonths(1).minusDays(1)
-        return journalEntryDao.observeRange(startDate.toString(), endDate.toString()).map { list ->
+        return journalEntryDao.observeInRange(startDate.toString(), endDate.toString()).map { list ->
             list.map { it.toDomain() }
         }
     }
 
     override fun observeEntryByDate(date: LocalDate): Flow<JournalEntry?> {
-        return journalEntryDao.observeRange(date.toString(), date.toString()).map { list ->
+        return journalEntryDao.observeInRange(date.toString(), date.toString()).map { list ->
             list.firstOrNull()?.toDomain()
         }
     }
@@ -70,7 +70,7 @@ class JournalRepositoryImpl @Inject constructor(
                 id = entity.id,
                 journalEntryId = entity.journalEntryId,
                 symptomDefinitionId = entity.symptomDefinitionId,
-                symptomName = entity.symptomName,
+                symptomName = entity.symptomDefinitionId,
                 severity = entity.severity,
                 bodyLocation = entity.bodyLocation,
                 note = entity.note
@@ -86,7 +86,6 @@ class JournalRepositoryImpl @Inject constructor(
                 id = if (obs.id.isNotEmpty()) obs.id else UUID.randomUUID().toString(),
                 journalEntryId = entryId,
                 symptomDefinitionId = obs.symptomDefinitionId,
-                symptomName = obs.symptomName,
                 severity = obs.severity,
                 bodyLocation = obs.bodyLocation,
                 note = obs.note
@@ -125,11 +124,9 @@ class JournalRepositoryImpl @Inject constructor(
         return SleepEntry(
             id = entity.id,
             journalEntryId = entity.journalEntryId,
-            bedTime = entity.bedTime,
-            wakeTime = entity.wakeTime,
-            durationMinutes = entity.durationMinutes,
-            qualityScore = entity.qualityScore,
-            wasInterrupted = entity.wasInterrupted,
+            sleepStart = entity.sleepStart,
+            sleepEnd = entity.sleepEnd,
+            qualityLevel = entity.qualityLevel,
             note = entity.note
         )
     }
@@ -138,11 +135,9 @@ class JournalRepositoryImpl @Inject constructor(
         val entity = SleepEntryEntity(
             id = if (sleep.id.isNotEmpty()) sleep.id else UUID.randomUUID().toString(),
             journalEntryId = sleep.journalEntryId,
-            bedTime = sleep.bedTime,
-            wakeTime = sleep.wakeTime,
-            durationMinutes = sleep.durationMinutes,
-            qualityScore = sleep.qualityScore,
-            wasInterrupted = sleep.wasInterrupted,
+            sleepStart = sleep.sleepStart,
+            sleepEnd = sleep.sleepEnd,
+            qualityLevel = sleep.qualityLevel,
             note = sleep.note
         )
         sleepEntryDao.upsert(entity)
@@ -153,7 +148,7 @@ class JournalRepositoryImpl @Inject constructor(
             MeasurementEntry(
                 id = entity.id,
                 journalEntryId = entity.journalEntryId,
-                measurementType = entity.measurementType,
+                measurementType = runCatching { MeasurementType.valueOf(entity.measurementType) }.getOrDefault(MeasurementType.WEIGHT),
                 value = entity.value,
                 unit = entity.unit,
                 note = entity.note
@@ -165,7 +160,7 @@ class JournalRepositoryImpl @Inject constructor(
         val entity = MeasurementEntryEntity(
             id = if (measurement.id.isNotEmpty()) measurement.id else UUID.randomUUID().toString(),
             journalEntryId = measurement.journalEntryId,
-            measurementType = measurement.measurementType,
+            measurementType = measurement.measurementType.name,
             value = measurement.value,
             unit = measurement.unit,
             note = measurement.note
@@ -174,7 +169,7 @@ class JournalRepositoryImpl @Inject constructor(
     }
 
     override suspend fun searchNotes(query: String): List<JournalEntry> {
-        return journalEntryDao.search(query).map { it.toDomain() }
+        return journalEntryDao.searchByNote(query).map { it.toDomain() }
     }
 
     private fun JournalEntryEntity.toDomain() = JournalEntry(

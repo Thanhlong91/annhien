@@ -58,8 +58,11 @@ class CycleModuleViewModel @Inject constructor(
     fun loadData() {
         viewModelScope.launch {
             cycleRepository.observePeriodEpisodes().collect { episodes ->
-                val cycles = CyclePredictionEngine.extractCompletedCycles(episodes)
-                val pred = CyclePredictionEngine.predictNextPeriod(episodes, LocalDate.now())
+                val cycles = CyclePredictionEngine.buildCycleSummaries(episodes)
+                val lastEpisode = episodes.sortedByDescending { it.startDate }.firstOrNull()
+                val pred = if (lastEpisode != null) {
+                    CyclePredictionEngine.predictNextPeriod(lastEpisode.startDate, cycles)
+                } else null
                 _uiState.update {
                     it.copy(
                         episodes = episodes.sortedByDescending { e -> e.startDate },
@@ -141,23 +144,24 @@ fun CycleModuleScreen(
                         Spacer(modifier = Modifier.height(10.dp))
 
                         when (val pred = uiState.prediction) {
-                            is CyclePredictionResult.Predicted -> {
+                            is CyclePredictionResult.Eligible -> {
+                                val p = pred.prediction
                                 Text(
-                                    text = "Dự kiến: ${pred.expectedStartDate.format(formatter)} – ${pred.expectedEndDate.format(formatter)}",
+                                    text = "Dự kiến: ${p.earliestEstimate.format(formatter)} – ${p.latestEstimate.format(formatter)}",
                                     style = MaterialTheme.typography.bodyLarge,
                                     fontWeight = FontWeight.SemiBold,
                                     color = MaterialTheme.colorScheme.primary
                                 )
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
-                                    text = "Độ dài chu kỳ trung vị: ${pred.cycleLengthDays} ngày. Khoảng dao động ±${pred.confidenceIntervalDays} ngày.",
+                                    text = "Độ dài chu kỳ trung vị: ${p.medianCycleLengthDays} ngày. Dao động: ${p.minCycleLengthDays} – ${p.maxCycleLengthDays} ngày.",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                             is CyclePredictionResult.Ineligible -> {
                                 Text(
-                                    text = pred.reasonVi,
+                                    text = pred.reason.messageVi,
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )

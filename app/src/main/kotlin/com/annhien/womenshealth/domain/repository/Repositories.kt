@@ -10,6 +10,8 @@ interface CycleRepository {
     suspend fun getRecentEpisodes(limit: Int = 12): List<PeriodEpisode>
     suspend fun recordPeriodStart(date: LocalDate, isConfirmed: Boolean = true): String
     suspend fun recordPeriodEnd(episodeId: String, endDate: LocalDate)
+    suspend fun recordPeriodRange(startDate: LocalDate, endDate: LocalDate, isConfirmed: Boolean = true): String
+    suspend fun togglePeriodDay(date: LocalDate)
     suspend fun deleteEpisode(episodeId: String)
     suspend fun saveBleedingObservation(observation: BleedingObservation)
     fun observeBleedingByDate(date: LocalDate): Flow<List<BleedingObservation>>

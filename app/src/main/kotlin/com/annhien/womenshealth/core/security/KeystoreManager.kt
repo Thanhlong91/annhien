@@ -58,17 +58,28 @@ class KeystoreManager(private val context: Context) {
      * 4. Never returned in plaintext except as ByteArray for Room/SQLCipher
      */
     fun getDatabasePassphrase(): ByteArray {
-        val encrypted = prefs.getString(PREF_KEY_ENCRYPTED_PASSPHRASE, null)
-        val iv = prefs.getString(PREF_KEY_IV, null)
+        return try {
+            val encrypted = prefs.getString(PREF_KEY_ENCRYPTED_PASSPHRASE, null)
+            val iv = prefs.getString(PREF_KEY_IV, null)
 
-        return if (encrypted != null && iv != null) {
-            decryptPassphrase(
-                encryptedBytes = android.util.Base64.decode(encrypted, android.util.Base64.DEFAULT),
-                ivBytes = android.util.Base64.decode(iv, android.util.Base64.DEFAULT)
-            )
-        } else {
-            // First time: generate and store
-            generateAndStorePassphrase()
+            if (encrypted != null && iv != null) {
+                decryptPassphrase(
+                    encryptedBytes = android.util.Base64.decode(encrypted, android.util.Base64.DEFAULT),
+                    ivBytes = android.util.Base64.decode(iv, android.util.Base64.DEFAULT)
+                )
+            } else {
+                generateAndStorePassphrase()
+            }
+        } catch (e: Exception) {
+            try {
+                prefs.edit().clear().apply()
+                generateAndStorePassphrase()
+            } catch (ex: Exception) {
+                // Safeguard in-memory fallback
+                ByteArray(PASSPHRASE_BYTE_LENGTH).apply {
+                    java.security.SecureRandom().nextBytes(this)
+                }
+            }
         }
     }
 

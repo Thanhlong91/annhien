@@ -82,7 +82,9 @@ class JournalViewModel @Inject constructor(
                 val sleep = journalRepository.getSleepEntry(existing.id)
                 val measurements = journalRepository.getMeasurements(existing.id)
 
-                val temp = measurements.find { it.measurementType == "BBT" }?.value?.toFloat()
+                val temp = measurements.find { it.measurementType == MeasurementType.BBT }?.value?.toFloat()
+
+                val sleepMinutes = sleep?.let { java.time.Duration.between(it.sleepStart, it.sleepEnd).toMinutes() } ?: 420L
 
                 _editState.update {
                     it.copy(
@@ -92,8 +94,8 @@ class JournalViewModel @Inject constructor(
                         symptomSeverityMap = symptoms.associate { s -> s.symptomName to (s.severity ?: 3) },
                         selectedMoodLevel = mood?.moodLevel ?: 3,
                         selectedMoodTags = mood?.moodTags?.toSet() ?: emptySet(),
-                        sleepHours = (sleep?.durationMinutes ?: 420) / 60f,
-                        sleepQuality = sleep?.qualityScore ?: 3,
+                        sleepHours = sleepMinutes / 60f,
+                        sleepQuality = sleep?.qualityLevel ?: 3,
                         temperatureCelsius = temp
                     )
                 }
@@ -167,15 +169,15 @@ class JournalViewModel @Inject constructor(
             )
 
             // Save sleep
+            val nowInstant = java.time.Instant.now()
+            val sleepSeconds = (state.sleepHours * 3600).toLong()
             journalRepository.saveSleepEntry(
                 SleepEntry(
                     id = "",
                     journalEntryId = entryId,
-                    bedTime = null,
-                    wakeTime = null,
-                    durationMinutes = (state.sleepHours * 60).toInt(),
-                    qualityScore = state.sleepQuality,
-                    wasInterrupted = false,
+                    sleepStart = nowInstant.minusSeconds(sleepSeconds),
+                    sleepEnd = nowInstant,
+                    qualityLevel = state.sleepQuality,
                     note = null
                 )
             )

@@ -41,14 +41,15 @@ class KnowledgeRepositoryImpl @Inject constructor(
     }
 
     override suspend fun toggleBookmark(articleId: String) {
-        val existing = bookmarkDao.get(articleId)
+        val existing = bookmarkDao.getByArticle(articleId)
         if (existing != null) {
-            bookmarkDao.delete(existing)
+            bookmarkDao.deleteByArticle(articleId)
         } else {
             bookmarkDao.upsert(
                 BookmarkEntity(
                     id = UUID.randomUUID().toString(),
                     articleId = articleId,
+                    lastReadPosition = 0,
                     createdAt = Instant.now()
                 )
             )

@@ -28,6 +28,9 @@ class AppPreferences @Inject constructor(
         val LOCK_TIMEOUT_SECONDS = intPreferencesKey("lock_timeout_seconds")
         val THEME_MODE = stringPreferencesKey("theme_mode")
         val SECURE_SCREEN_ENABLED = booleanPreferencesKey("secure_screen_enabled")
+        val PIN_HASH = stringPreferencesKey("pin_hash")
+        val PIN_SALT = stringPreferencesKey("pin_salt")
+        val CAMOUFLAGE_MODE_ENABLED = booleanPreferencesKey("camouflage_mode_enabled")
     }
 
     val isOnboardingCompleted: Flow<Boolean> = dataStore.data
@@ -60,6 +63,30 @@ class AppPreferences @Inject constructor(
         }
         .map { preferences ->
             preferences[PreferencesKeys.BIOMETRIC_ENABLED] ?: false
+        }
+
+    val pinHash: Flow<String?> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences()) else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.PIN_HASH]
+        }
+
+    val pinSalt: Flow<String?> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences()) else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.PIN_SALT]
+        }
+
+    val isCamouflageEnabled: Flow<Boolean> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences()) else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.CAMOUFLAGE_MODE_ENABLED] ?: false
         }
 
     val lockTimeoutSeconds: Flow<Int> = dataStore.data
@@ -101,6 +128,28 @@ class AppPreferences @Inject constructor(
     suspend fun setAppLockEnabled(enabled: Boolean) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.APP_LOCK_ENABLED] = enabled
+        }
+    }
+
+    suspend fun savePin(hash: String, salt: String) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.PIN_HASH] = hash
+            preferences[PreferencesKeys.PIN_SALT] = salt
+            preferences[PreferencesKeys.APP_LOCK_ENABLED] = true
+        }
+    }
+
+    suspend fun clearPin() {
+        dataStore.edit { preferences ->
+            preferences.remove(PreferencesKeys.PIN_HASH)
+            preferences.remove(PreferencesKeys.PIN_SALT)
+            preferences[PreferencesKeys.APP_LOCK_ENABLED] = false
+        }
+    }
+
+    suspend fun setCamouflageEnabled(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.CAMOUFLAGE_MODE_ENABLED] = enabled
         }
     }
 

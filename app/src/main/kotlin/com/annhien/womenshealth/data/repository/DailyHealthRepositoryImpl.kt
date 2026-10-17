@@ -36,8 +36,8 @@ class DailyHealthRepositoryImpl @Inject constructor(
                         id = UUID.randomUUID().toString(),
                         habitId = habitId,
                         logDate = date,
-                        isCompleted = true,
-                        numericValue = 1.0,
+                        value = 1.0,
+                        note = null,
                         createdAt = Instant.now()
                     )
                 )
@@ -54,11 +54,12 @@ class DailyHealthRepositoryImpl @Inject constructor(
             dailyHabitDao.upsert(
                 DailyHabitEntity(
                     id = newId,
-                    habitName = "Uống nước",
-                    category = "WATER",
-                    targetDailyCount = 2000,
-                    unit = "ml",
+                    name = "Uống nước",
+                    habitType = "WATER",
+                    targetValue = 2000.0,
+                    targetUnit = "ml",
                     isActive = true,
+                    isPaused = false,
                     createdAt = Instant.now()
                 )
             )
@@ -70,8 +71,8 @@ class DailyHealthRepositoryImpl @Inject constructor(
                 id = UUID.randomUUID().toString(),
                 habitId = habitId,
                 logDate = date,
-                isCompleted = amountMl >= 2000,
-                numericValue = amountMl.toDouble(),
+                value = amountMl.toDouble(),
+                note = null,
                 createdAt = Instant.now()
             )
         )

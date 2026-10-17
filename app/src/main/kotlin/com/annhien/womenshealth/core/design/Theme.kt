@@ -6,6 +6,7 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -17,58 +18,46 @@ import androidx.compose.ui.unit.sp
 // All colors checked for WCAG 2.1 AA contrast compliance.
 
 object AnNhienColors {
-    // Sage green (primary)
-    val Sage50 = Color(0xFFF2F5F0)
-    val Sage100 = Color(0xFFDDE5D9)
-    val Sage200 = Color(0xFFC1D4BA)
-    val Sage300 = Color(0xFFA3C29A)
-    val Sage400 = Color(0xFF87B07B)
-    val Sage500 = Color(0xFF6B9E5E)   // Primary
-    val Sage600 = Color(0xFF577F4C)
-    val Sage700 = Color(0xFF43613A)
-    val Sage800 = Color(0xFF2E4329)
-    val Sage900 = Color(0xFF1A2618)
+    // Sage green (primary) - exactly matching web simulator
+    val Sage500 = Color(0xFF3D684E)   // Primary
+    val Sage100 = Color(0xFFD8E7DB)   // Primary container
+    val Sage900 = Color(0xFF00210E)   // On primary container
 
     // Dusty lavender (secondary)
-    val Lavender50 = Color(0xFFF5F3F9)
-    val Lavender100 = Color(0xFFE8E2F4)
-    val Lavender200 = Color(0xFFD0C8E8)
-    val Lavender300 = Color(0xFFB7AEDC)
-    val Lavender400 = Color(0xFF9E93D0)
-    val Lavender500 = Color(0xFF8578C4)  // Secondary
-    val Lavender600 = Color(0xFF6A5FAE)
-    val Lavender700 = Color(0xFF504792)
-    val Lavender800 = Color(0xFF362F75)
-    val Lavender900 = Color(0xFF1C1858)
+    val Lavender500 = Color(0xFF5F5B7D)  // Secondary
+    val Lavender100 = Color(0xFFE5E0F9)  // Secondary container
+    val Lavender900 = Color(0xFF1C1836)
 
-    // Warm terracotta (tertiary / accent for period)
-    val Terracotta50 = Color(0xFFFAF1EE)
-    val Terracotta100 = Color(0xFFF3DDD6)
-    val Terracotta300 = Color(0xFFD9917C)
-    val Terracotta500 = Color(0xFFC0624A)  // Tertiary (used sparingly)
+    // Dusty rose / terracotta (tertiary)
+    val Terracotta500 = Color(0xFF854E62)  // Tertiary
+    val Terracotta100 = Color(0xFFFFD9E2)  // Tertiary container
+    val Terracotta900 = Color(0xFF3B0B1D)
 
-    // Warm neutral surface
-    val Neutral50  = Color(0xFFFBF9F7)
-    val Neutral100 = Color(0xFFF2EFE9)
-    val Neutral200 = Color(0xFFE5DFD5)
-    val Neutral300 = Color(0xFFCFC7B9)
-    val Neutral400 = Color(0xFFB8AD9D)
-    val Neutral500 = Color(0xFF9E9282)
-    val Neutral600 = Color(0xFF7D7567)
-    val Neutral700 = Color(0xFF5E584D)
-    val Neutral800 = Color(0xFF3E3A32)
-    val Neutral900 = Color(0xFF1F1D18)
+    // Surfaces & Backgrounds
+    val BackgroundLight = Color(0xFFF8FAF8)
+    val SurfaceLight = Color(0xFFFFFFFF)
+    val SurfaceVariantLight = Color(0xFFF0F4F0)
+    val Neutral900 = Color(0xFF191C1A)
+    val Neutral700 = Color(0xFF424942)
+    val Neutral500 = Color(0xFF727972)
+    val Neutral300 = Color(0xFFE0E5E0)
+    val Neutral200 = Color(0xFFE8ECE8)
 
-    // Semantic
-    val ErrorLight = Color(0xFFB3261E)
-    val ErrorDark  = Color(0xFFFFB4AB)
-    val WarningLight = Color(0xFF7A5900)
-    val WarningDark  = Color(0xFFFFB951)
+    // Period / Error Red
+    val PeriodRed = Color(0xFFBA1A1A)
+    val PeriodRedContainer = Color(0xFFFFDAD6)
+    val OnPeriodRedContainer = Color(0xFF410002)
 
-    // Dark mode surfaces
-    val DarkSurface = Color(0xFF1A1C1A)
-    val DarkSurfaceVariant = Color(0xFF252825)
-    val DarkBackground = Color(0xFF121412)
+    // Dark mode
+    val Sage300 = Color(0xFFA2D3AF)
+    val Sage700 = Color(0xFF244F37)
+    val Lavender300 = Color(0xFFC8C2EA)
+    val Lavender700 = Color(0xFF474364)
+    val Terracotta300 = Color(0xFFF8B4CB)
+    val Terracotta700 = Color(0xFF6B374A)
+    val DarkBackground = Color(0xFF111412)
+    val DarkSurface = Color(0xFF191C1A)
+    val DarkSurfaceVariant = Color(0xFF222623)
 }
 
 // ─── Color Schemes ────────────────────────────────────────────────────────
@@ -87,22 +76,22 @@ val AnNhienLightColorScheme = lightColorScheme(
     tertiary = AnNhienColors.Terracotta500,
     onTertiary = Color.White,
     tertiaryContainer = AnNhienColors.Terracotta100,
-    onTertiaryContainer = Color(0xFF3B0B00),
+    onTertiaryContainer = AnNhienColors.Terracotta900,
 
-    background = AnNhienColors.Neutral50,
+    background = AnNhienColors.BackgroundLight,
     onBackground = AnNhienColors.Neutral900,
-    surface = Color.White,
+    surface = AnNhienColors.SurfaceLight,
     onSurface = AnNhienColors.Neutral900,
-    surfaceVariant = AnNhienColors.Neutral100,
+    surfaceVariant = AnNhienColors.SurfaceVariantLight,
     onSurfaceVariant = AnNhienColors.Neutral700,
 
-    outline = AnNhienColors.Neutral300,
-    outlineVariant = AnNhienColors.Neutral200,
+    outline = AnNhienColors.Neutral500,
+    outlineVariant = AnNhienColors.Neutral300,
 
-    error = AnNhienColors.ErrorLight,
+    error = AnNhienColors.PeriodRed,
     onError = Color.White,
-    errorContainer = Color(0xFFF9DEDC),
-    onErrorContainer = Color(0xFF410E0B)
+    errorContainer = AnNhienColors.PeriodRedContainer,
+    onErrorContainer = AnNhienColors.OnPeriodRedContainer
 )
 
 val AnNhienDarkColorScheme = darkColorScheme(
@@ -118,20 +107,20 @@ val AnNhienDarkColorScheme = darkColorScheme(
 
     tertiary = AnNhienColors.Terracotta300,
     onTertiary = Color(0xFF3B0B00),
-    tertiaryContainer = Color(0xFF5C1A06),
-    onTertiaryContainer = AnNhienColors.Terracotta50,
+    tertiaryContainer = AnNhienColors.Terracotta700,
+    onTertiaryContainer = AnNhienColors.Terracotta100,
 
     background = AnNhienColors.DarkBackground,
-    onBackground = AnNhienColors.Neutral100,
+    onBackground = Color(0xFFE1E3DF),
     surface = AnNhienColors.DarkSurface,
-    onSurface = AnNhienColors.Neutral100,
+    onSurface = Color(0xFFE1E3DF),
     surfaceVariant = AnNhienColors.DarkSurfaceVariant,
-    onSurfaceVariant = AnNhienColors.Neutral300,
+    onSurfaceVariant = Color(0xFFC1C7C1),
 
-    outline = AnNhienColors.Neutral600,
-    outlineVariant = AnNhienColors.Neutral700,
+    outline = Color(0xFF8B938B),
+    outlineVariant = Color(0xFF303531),
 
-    error = AnNhienColors.ErrorDark,
+    error = Color(0xFFFFB4AB),
     onError = Color(0xFF690005),
     errorContainer = Color(0xFF93000A),
     onErrorContainer = Color(0xFFFFDAD6)
@@ -252,3 +241,89 @@ fun AnNhienTheme(
         content = content
     )
 }
+
+// ─── Utilities Palette (Synchronized with Web Simulator) ───────────────────
+
+enum class UtilityColorCategory {
+    SAGE, ROSE, LAVENDER, TERRACOTTA, SUN, WATER, NEUTRAL
+}
+
+object UtilityThemeColors {
+    // Sage (.icon-sage)
+    val SageContainerLight = Color(0xFFD8E7DB)
+    val SageIconLight = Color(0xFF3D684E)
+    val SageContainerDark = Color(0xFF244F37)
+    val SageIconDark = Color(0xFFA2D3AF)
+
+    // Rose (.icon-rose)
+    val RoseContainerLight = Color(0xFFFFD9E2)
+    val RoseIconLight = Color(0xFF854E62)
+    val RoseContainerDark = Color(0xFF6B374A)
+    val RoseIconDark = Color(0xFFF8B4CB)
+
+    // Lavender (.icon-lavender)
+    val LavenderContainerLight = Color(0xFFE5E0F9)
+    val LavenderIconLight = Color(0xFF5F5B7D)
+    val LavenderContainerDark = Color(0xFF474364)
+    val LavenderIconDark = Color(0xFFC8C2EA)
+
+    // Terracotta (.icon-terracotta)
+    val TerracottaContainerLight = Color(0xFFFFE0D2)
+    val TerracottaIconLight = Color(0xFFA83800)
+    val TerracottaContainerDark = Color(0xFF5C2000)
+    val TerracottaIconDark = Color(0xFFFFB596)
+
+    // Sun (.icon-sun)
+    val SunContainerLight = Color(0xFFFFF0C2)
+    val SunIconLight = Color(0xFFB38600)
+    val SunContainerDark = Color(0xFF564100)
+    val SunIconDark = Color(0xFFFFDE7B)
+
+    // Water (.icon-water)
+    val WaterContainerLight = Color(0xFFD9EEFF)
+    val WaterIconLight = Color(0xFF0066B2)
+    val WaterContainerDark = Color(0xFF00497D)
+    val WaterIconDark = Color(0xFF9ECAFF)
+}
+
+@Composable
+fun getUtilityCategoryColors(category: UtilityColorCategory): Pair<Color, Color> {
+    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
+    return when (category) {
+        UtilityColorCategory.SAGE -> if (isDark)
+            UtilityThemeColors.SageContainerDark to UtilityThemeColors.SageIconDark
+        else
+            UtilityThemeColors.SageContainerLight to UtilityThemeColors.SageIconLight
+
+        UtilityColorCategory.ROSE -> if (isDark)
+            UtilityThemeColors.RoseContainerDark to UtilityThemeColors.RoseIconDark
+        else
+            UtilityThemeColors.RoseContainerLight to UtilityThemeColors.RoseIconLight
+
+        UtilityColorCategory.LAVENDER -> if (isDark)
+            UtilityThemeColors.LavenderContainerDark to UtilityThemeColors.LavenderIconDark
+        else
+            UtilityThemeColors.LavenderContainerLight to UtilityThemeColors.LavenderIconLight
+
+        UtilityColorCategory.TERRACOTTA -> if (isDark)
+            UtilityThemeColors.TerracottaContainerDark to UtilityThemeColors.TerracottaIconDark
+        else
+            UtilityThemeColors.TerracottaContainerLight to UtilityThemeColors.TerracottaIconLight
+
+        UtilityColorCategory.SUN -> if (isDark)
+            UtilityThemeColors.SunContainerDark to UtilityThemeColors.SunIconDark
+        else
+            UtilityThemeColors.SunContainerLight to UtilityThemeColors.SunIconLight
+
+        UtilityColorCategory.WATER -> if (isDark)
+            UtilityThemeColors.WaterContainerDark to UtilityThemeColors.WaterIconDark
+        else
+            UtilityThemeColors.WaterContainerLight to UtilityThemeColors.WaterIconLight
+
+        UtilityColorCategory.NEUTRAL -> if (isDark)
+            MaterialTheme.colorScheme.surfaceVariant to MaterialTheme.colorScheme.onSurface
+        else
+            MaterialTheme.colorScheme.surfaceVariant to MaterialTheme.colorScheme.onSurface
+    }
+}
+

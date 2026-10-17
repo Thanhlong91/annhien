@@ -22,6 +22,7 @@ import com.annhien.womenshealth.feature.lock.LockScreen
 import com.annhien.womenshealth.navigation.MainNavGraph
 import com.annhien.womenshealth.navigation.Screen
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import java.util.concurrent.Executor
 import javax.inject.Inject
 
@@ -43,10 +44,14 @@ class MainActivity : AppCompatActivity() {
 
         setContent {
             val isOnboardingComplete by appPreferences.isOnboardingCompleted.collectAsState(initial = null)
-            val isLockEnabled by appPreferences.isAppLockEnabled.collectAsState(initial = false)
+            val isLockEnabled by appPreferences.isAppLockEnabled.collectAsState(initial = null)
+            val isCamouflageEnabled by appPreferences.isCamouflageEnabled.collectAsState(initial = false)
             val isBiometricEnabled by appPreferences.isBiometricEnabled.collectAsState(initial = false)
             val isSecureScreen by appPreferences.secureScreenEnabled.collectAsState(initial = true)
             val themeMode by appPreferences.themeMode.collectAsState(initial = "SYSTEM")
+            val pinHash by appPreferences.pinHash.collectAsState(initial = null)
+            val pinSalt by appPreferences.pinSalt.collectAsState(initial = null)
+            val coroutineScope = rememberCoroutineScope()
 
             // Dynamic FLAG_SECURE
             LaunchedEffect(isSecureScreen) {
@@ -66,12 +71,35 @@ class MainActivity : AppCompatActivity() {
                 else -> isSystemInDarkTheme()
             }
 
-            var isAppUnlocked by remember { mutableStateOf(!isLockEnabled) }
+            var isAppUnlocked by remember { mutableStateOf<Boolean?>(null) }
+            var isCalculatorDisguise by remember { mutableStateOf(false) }
 
-            // Update unlocked state if lock was initially false
+            // Sync unlocked state when preference is initially loaded or changed
             LaunchedEffect(isLockEnabled) {
-                if (!isLockEnabled) {
+                if (isLockEnabled != null && isAppUnlocked == null) {
+                    if (isLockEnabled == true) {
+                        isAppUnlocked = false
+                        if (isCamouflageEnabled) {
+                            isCalculatorDisguise = true
+                        }
+                    } else {
+                        isAppUnlocked = true
+                    }
+                } else if (isLockEnabled == false) {
                     isAppUnlocked = true
+                    isCalculatorDisguise = false
+                }
+            }
+
+            val handleLockApp: (Boolean) -> Unit = { disguise ->
+                isCalculatorDisguise = disguise
+                isAppUnlocked = false
+            }
+
+            val handleToggleTheme: () -> Unit = {
+                val nextMode = if (darkTheme) "LIGHT" else "DARK"
+                coroutineScope.launch {
+                    appPreferences.setThemeMode(nextMode)
                 }
             }
 
@@ -80,15 +108,26 @@ class MainActivity : AppCompatActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    if (isOnboardingComplete == null) {
+                    if (isOnboardingComplete == null || isLockEnabled == null || isAppUnlocked == null) {
                         // Loading initial state
-                    } else if (isLockEnabled && !isAppUnlocked) {
+                    } else if ((isLockEnabled == true && isAppUnlocked == false) || isCalculatorDisguise) {
                         LockScreen(
-                            expectedPinHash = null,
-                            salt = null,
-                            onUnlocked = { isAppUnlocked = true },
+                            title = "Khóa An Nhiên",
+                            subtitle = "Bảo vệ thông tin sức khỏe của bạn",
+                            expectedPinHash = pinHash,
+                            saltBase64 = pinSalt,
+                            startInCalculatorMode = isCalculatorDisguise,
+                            onUnlocked = {
+                                isAppUnlocked = true
+                                isCalculatorDisguise = false
+                            },
                             onBiometricRequested = if (isBiometricEnabled) {
-                                { showBiometricPrompt { isAppUnlocked = true } }
+                                {
+                                    showBiometricPrompt {
+                                        isAppUnlocked = true
+                                        isCalculatorDisguise = false
+                                    }
+                                }
                             } else null,
                             isBiometricAvailable = isBiometricEnabled
                         )
@@ -104,7 +143,10 @@ class MainActivity : AppCompatActivity() {
                             navController = navController,
                             startDestination = startDestination,
                             appPreferences = appPreferences,
-                            backupManager = backupManager
+                            backupManager = backupManager,
+                            onLockApp = handleLockApp,
+                            onToggleTheme = handleToggleTheme,
+                            isDarkTheme = darkTheme
                         )
                     }
                 }

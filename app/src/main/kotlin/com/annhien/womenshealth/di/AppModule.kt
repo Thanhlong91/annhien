@@ -41,11 +41,13 @@ object AppModule {
         @ApplicationContext context: Context,
         keystoreManager: KeystoreManager
     ): AnNhienDatabase {
+        // Ensure SQLCipher native libraries are loaded
+        net.sqlcipher.database.SQLiteDatabase.loadLibs(context)
+
         // Get the database passphrase from Keystore (never hardcoded)
         val passphrase = keystoreManager.getDatabasePassphrase()
+        // SupportFactory internally zeroes out passphrase upon DB open when clearPassphrase = true (default)
         val factory = SupportFactory(passphrase)
-        // Zero out the passphrase from memory after use
-        passphrase.fill(0)
 
         return Room.databaseBuilder(
             context.applicationContext,
@@ -53,6 +55,7 @@ object AppModule {
             AnNhienDatabase.DATABASE_NAME
         )
             .openHelperFactory(factory)
+            .fallbackToDestructiveMigration()
             .build()
     }
 

@@ -23,17 +23,24 @@ import com.annhien.womenshealth.core.design.*
 
 @Composable
 fun LockScreen(
-    title: String = "Nhập mã PIN",
-    subtitle: String = "Bảo vệ thông tin sức khỏe riêng tư của bạn",
+    title: String = "Khóa An Nhiên",
+    subtitle: String = "Bảo vệ thông tin sức khỏe của bạn",
     expectedPinHash: String?,
-    salt: ByteArray?,
+    saltBase64: String?,
+    startInCalculatorMode: Boolean = false,
     onUnlocked: () -> Unit,
     onBiometricRequested: (() -> Unit)? = null,
     isBiometricAvailable: Boolean = false
 ) {
-    var isCalculatorMode by remember { mutableStateOf(false) }
+    var isCalculatorMode by remember(startInCalculatorMode) { mutableStateOf(startInCalculatorMode) }
     var enteredPin by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(startInCalculatorMode) {
+        if (startInCalculatorMode) {
+            isCalculatorMode = true
+        }
+    }
 
     // Calculator disguise state
     var calcDisplay by remember { mutableStateOf("0") }
@@ -45,16 +52,22 @@ fun LockScreen(
             enteredPin = newPin
             errorMessage = null
 
-            if (newPin.length == 4 || newPin.length == 6) {
-                if (expectedPinHash != null && salt != null) {
-                    if (com.annhien.womenshealth.core.security.PinManager.verifyPin(newPin, salt, expectedPinHash)) {
+            if (newPin.length == 4) {
+                if (expectedPinHash != null && saltBase64 != null) {
+                    if (com.annhien.womenshealth.core.security.PinManager.verifyPin(newPin, saltBase64, expectedPinHash)) {
                         onUnlocked()
-                    } else if (newPin.length == 6) {
+                    } else {
                         errorMessage = "Mã PIN không chính xác"
                         enteredPin = ""
                     }
                 } else {
-                    onUnlocked()
+                    // Mặc định ban đầu nếu chưa đặt PIN: 1234
+                    if (newPin == "1234") {
+                        onUnlocked()
+                    } else {
+                        errorMessage = "Mã PIN không chính xác (Mặc định: 1234)"
+                        enteredPin = ""
+                    }
                 }
             }
         }
@@ -73,18 +86,38 @@ fun LockScreen(
                 calcDisplay = "0"
                 calcExpression = ""
             }
+            "+/-" -> {
+                if (calcDisplay != "0") {
+                    calcDisplay = if (calcDisplay.startsWith("-")) calcDisplay.drop(1) else "-$calcDisplay"
+                    calcExpression = calcDisplay
+                }
+            }
+            "%" -> {
+                try {
+                    val num = calcDisplay.toDouble() / 100.0
+                    calcDisplay = if (num % 1.0 == 0.0) num.toLong().toString() else num.toString()
+                    calcExpression = calcDisplay
+                } catch (e: Exception) {
+                    calcDisplay = "0"
+                }
+            }
             "=" -> {
-                // Kiểm tra xem số đang nhập có phải mã PIN mở khóa không
-                if (calcExpression == "1234" || calcDisplay == "1234" ||
-                    (expectedPinHash != null && salt != null &&
-                     com.annhien.womenshealth.core.security.PinManager.verifyPin(calcDisplay, salt, expectedPinHash))) {
+                // Kiểm tra xem số đang nhập/hiển thị có phải mã PIN mở khóa không
+                val isMatch = if (expectedPinHash != null && saltBase64 != null) {
+                    com.annhien.womenshealth.core.security.PinManager.verifyPin(calcDisplay, saltBase64, expectedPinHash) ||
+                    com.annhien.womenshealth.core.security.PinManager.verifyPin(calcExpression, saltBase64, expectedPinHash)
+                } else {
+                    calcDisplay == "1234" || calcExpression == "1234"
+                }
+
+                if (isMatch) {
                     onUnlocked()
                     return
                 }
-                // Nếu không phải PIN, tính toán biểu thức đơn giản
+
+                // Nếu không phải PIN, tính toán biểu thức như máy tính thật
                 try {
-                    val sanitized = calcExpression.replace("×", "*").replace("÷", "/")
-                    val result = evaluateSimpleMath(sanitized)
+                    val result = evaluateSimpleMath(calcExpression)
                     calcDisplay = result
                     calcExpression = result
                 } catch (e: Exception) {
@@ -92,7 +125,7 @@ fun LockScreen(
                 }
             }
             "+", "-", "×", "÷" -> {
-                calcExpression += key
+                calcExpression = if (calcExpression.isNotEmpty()) "$calcExpression$key" else "${calcDisplay}$key"
                 calcDisplay = "0"
             }
             else -> {
@@ -178,6 +211,14 @@ fun LockScreen(
                         }
                     }
                 }
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = "Mẹo ngụy trang: Nhập mã PIN rồi nhấn \"=\" để mở An Nhiên",
+                    color = Color(0xFF666666),
+                    fontSize = 12.sp,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
+                )
             }
         }
     } else {
@@ -342,14 +383,27 @@ fun LockScreen(
 
 private fun evaluateSimpleMath(expr: String): String {
     return try {
-        val parts = expr.split("+")
-        if (parts.size == 2) {
-            val sum = parts[0].toDouble() + parts[1].toDouble()
-            return if (sum % 1 == 0.0) sum.toInt().toString() else sum.toString()
+        val sanitized = expr.replace("×", "*").replace("÷", "/")
+        val opIndex = sanitized.indexOfAny(charArrayOf('+', '-', '*', '/'), startIndex = 1)
+        if (opIndex > 0) {
+            val a = sanitized.substring(0, opIndex).trim().toDouble()
+            val op = sanitized[opIndex]
+            val b = sanitized.substring(opIndex + 1).trim().toDouble()
+            val res = when (op) {
+                '+' -> a + b
+                '-' -> a - b
+                '*' -> a * b
+                '/' -> if (b != 0.0) a / b else Double.NaN
+                else -> a
+            }
+            if (res.isNaN()) "Error"
+            else if (res % 1.0 == 0.0) res.toLong().toString()
+            else String.format(java.util.Locale.US, "%.4f", res).trimEnd('0').trimEnd('.')
+        } else {
+            expr
         }
-        expr
     } catch (e: Exception) {
-        expr
+        "0"
     }
 }
 

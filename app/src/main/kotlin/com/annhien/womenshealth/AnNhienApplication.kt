@@ -21,14 +21,21 @@ class AnNhienApplication : Application(), Configuration.Provider {
     lateinit var workerFactory: HiltWorkerFactory
 
     override val workManagerConfiguration: Configuration
-        get() = Configuration.Builder()
-            .setWorkerFactory(workerFactory)
-            .build()
+        get() {
+            val builder = Configuration.Builder()
+            if (::workerFactory.isInitialized) {
+                builder.setWorkerFactory(workerFactory)
+            }
+            return builder.build()
+        }
 
     override fun onCreate() {
         super.onCreate()
+        // Load SQLCipher native libraries before any database access
+        net.sqlcipher.database.SQLiteDatabase.loadLibs(this)
+
         // Initialize notification channels on app start
-        com.annhien.womenshealth.core.notifications.NotificationChannelManager
-            .createChannels(this)
+        com.annhien.womenshealth.core.notifications.ReminderAlarmReceiver
+            .createNotificationChannels(this)
     }
 }

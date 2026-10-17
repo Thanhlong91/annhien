@@ -8,6 +8,7 @@ import com.annhien.womenshealth.domain.repository.DailyHealthRepository
 import com.annhien.womenshealth.domain.repository.JournalRepository
 import com.annhien.womenshealth.domain.usecase.cycle.CyclePredictionEngine
 import com.annhien.womenshealth.domain.usecase.cycle.CyclePredictionResult
+import com.annhien.womenshealth.domain.usecase.cycle.IneligibleReason
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -60,10 +61,19 @@ class HomeViewModel @Inject constructor(
                 }
 
                 // Predict next period if enough history
-                val prediction = CyclePredictionEngine.predictNextPeriod(episodes, today)
+                val summaries = CyclePredictionEngine.buildCycleSummaries(episodes)
+                val prediction = if (lastEpisode != null) {
+                    CyclePredictionEngine.predictNextPeriod(lastEpisode.startDate, summaries)
+                } else {
+                    CyclePredictionResult.Ineligible(
+                        reason = IneligibleReason.NO_RECENT_PERIOD,
+                        availableIntervals = 0,
+                        requiredIntervals = 3
+                    )
+                }
                 var daysUntil: Long? = null
-                if (prediction is CyclePredictionResult.Predicted) {
-                    daysUntil = ChronoUnit.DAYS.between(today, prediction.expectedStartDate)
+                if (prediction is CyclePredictionResult.Eligible) {
+                    daysUntil = ChronoUnit.DAYS.between(today, prediction.prediction.estimatedStartDate)
                 }
 
                 _uiState.update { current ->
@@ -102,7 +112,6 @@ class HomeViewModel @Inject constructor(
                 // Start period
                 cycleRepository.recordPeriodStart(today, isConfirmed = true)
             }
-            loadHomeData()
         }
     }
 

@@ -21,6 +21,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.annhien.womenshealth.core.design.UtilityColorCategory
+import com.annhien.womenshealth.core.design.getUtilityCategoryColors
 import com.annhien.womenshealth.domain.usecase.cycle.CyclePredictionResult
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -45,11 +47,39 @@ fun HomeScreen(
             TopAppBar(
                 title = {
                     Column {
-                        Text(
-                            text = "Hôm nay",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = "Hôm nay",
+                                style = MaterialTheme.typography.headlineSmall,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = MaterialTheme.colorScheme.onBackground
+                            )
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Surface(
+                                shape = RoundedCornerShape(12.dp),
+                                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Shield,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(12.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = "NGOẠI TUYẾN",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        fontSize = 10.sp
+                                    )
+                                }
+                            }
+                        }
                         Text(
                             text = uiState.currentDate.format(dateFormatter),
                             style = MaterialTheme.typography.bodySmall,
@@ -59,7 +89,15 @@ fun HomeScreen(
                 },
                 actions = {
                     IconButton(onClick = onNavigateToCalendar) {
-                        Icon(Icons.Default.CalendarMonth, contentDescription = "Lịch sức khỏe")
+                        Surface(
+                            shape = CircleShape,
+                            color = MaterialTheme.colorScheme.surfaceVariant,
+                            modifier = Modifier.size(40.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(Icons.Default.CalendarMonth, contentDescription = "Lịch sức khỏe", tint = MaterialTheme.colorScheme.onSurface)
+                            }
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -76,22 +114,22 @@ fun HomeScreen(
                 .padding(horizontal = 16.dp)
                 .verticalScroll(scrollState)
         ) {
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(6.dp))
 
-            // 1. Cycle & Period Status Card
+            // 1. Hero Cycle Card (Matching Simulator cycle-hero-card)
             CycleHeroCard(
                 uiState = uiState,
                 onTogglePeriod = { viewModel.togglePeriodToday() },
                 onCardClick = onNavigateToCalendar
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             // 2. Quick Log Action Row
             Text(
-                text = "Ghi nhanh hôm nay",
+                text = "Ghi nhanh cảm nhận",
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
+                fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground
             )
 
@@ -101,32 +139,37 @@ fun HomeScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
+                val (sageBg, sageFg) = getUtilityCategoryColors(UtilityColorCategory.SAGE)
+                val (roseBg, roseFg) = getUtilityCategoryColors(UtilityColorCategory.ROSE)
+                val (lavenderBg, lavenderFg) = getUtilityCategoryColors(UtilityColorCategory.LAVENDER)
+                val (waterBg, waterFg) = getUtilityCategoryColors(UtilityColorCategory.WATER)
+
                 QuickActionButton(
                     icon = Icons.Default.MedicalServices,
                     label = "Triệu chứng",
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                    tint = MaterialTheme.colorScheme.primary,
+                    color = sageBg,
+                    tint = sageFg,
                     onClick = onNavigateToJournal
                 )
                 QuickActionButton(
                     icon = Icons.Default.SentimentSatisfied,
                     label = "Tâm trạng",
-                    color = MaterialTheme.colorScheme.secondaryContainer,
-                    tint = MaterialTheme.colorScheme.secondary,
+                    color = roseBg,
+                    tint = roseFg,
                     onClick = onNavigateToJournal
                 )
                 QuickActionButton(
                     icon = Icons.Default.Bedtime,
                     label = "Giấc ngủ",
-                    color = MaterialTheme.colorScheme.tertiaryContainer,
-                    tint = MaterialTheme.colorScheme.tertiary,
+                    color = lavenderBg,
+                    tint = lavenderFg,
                     onClick = onNavigateToJournal
                 )
                 QuickActionButton(
                     icon = Icons.Default.WaterDrop,
                     label = "+250ml Nước",
-                    color = MaterialTheme.colorScheme.surfaceVariant,
-                    tint = MaterialTheme.colorScheme.primary,
+                    color = waterBg,
+                    tint = waterFg,
                     onClick = { viewModel.logQuickWater(250) }
                 )
             }
@@ -156,113 +199,153 @@ private fun CycleHeroCard(
     onTogglePeriod: () -> Unit,
     onCardClick: () -> Unit
 ) {
+    val isPeriodOngoing = uiState.ongoingEpisode != null
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(24.dp))
             .clickable(onClick = onCardClick),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+            containerColor = Color.Transparent
+        ),
+        shape = RoundedCornerShape(24.dp),
+        border = androidx.compose.foundation.BorderStroke(
+            1.dp,
+            if (isPeriodOngoing) MaterialTheme.colorScheme.error.copy(alpha = 0.3f)
+            else MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
         )
     ) {
-        Column(
-            modifier = Modifier.padding(20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    if (isPeriodOngoing) {
+                        androidx.compose.ui.graphics.Brush.verticalGradient(
+                            listOf(Color(0xFFFFDAD6), Color(0xFFFFF0ED))
+                        )
+                    } else {
+                        androidx.compose.ui.graphics.Brush.verticalGradient(
+                            listOf(Color(0xFFD8E7DB), Color(0xFFF2F7F3))
+                        )
+                    }
+                )
+                .padding(22.dp)
         ) {
-            val isPeriodOngoing = uiState.ongoingEpisode != null
-
-            // Indicator Badge
-            Surface(
-                shape = CircleShape,
-                color = if (isPeriodOngoing) MaterialTheme.colorScheme.errorContainer
-                else MaterialTheme.colorScheme.surface
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
-                    text = if (isPeriodOngoing) "Đang trong kỳ kinh nguyệt"
-                    else if (uiState.cycleDay != null) "Ngày ${uiState.cycleDay} của chu kỳ"
-                    else "Chưa có kỳ kinh được ghi nhận",
-                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = if (isPeriodOngoing) MaterialTheme.colorScheme.onErrorContainer
-                    else MaterialTheme.colorScheme.onSurface
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Forecast or status text
-            if (isPeriodOngoing) {
-                Text(
-                    text = "Hãy chú ý nghỉ ngơi và giữ ấm cơ thể",
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center
-                )
-            } else when (val pred = uiState.predictionResult) {
-                is CyclePredictionResult.Predicted -> {
-                    val days = uiState.daysUntilNextPeriod
+                // Indicator Badge (Pill)
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = if (isPeriodOngoing) Color.White
+                    else Color.White,
+                    shadowElevation = 2.dp
+                ) {
                     Text(
-                        text = if (days != null && days > 0) "Dự đoán kỳ kinh sau: khoảng $days ngày nữa"
-                        else if (days != null && days == 0L) "Dự đoán kỳ kinh có thể bắt đầu hôm nay"
-                        else "Kỳ kinh có thể đang chậm hơn dự kiến",
-                        style = MaterialTheme.typography.titleLarge,
+                        text = if (isPeriodOngoing) "🌸 Đang trong kỳ kinh nguyệt"
+                        else if (uiState.cycleDay != null) "Ngày ${uiState.cycleDay} của chu kỳ"
+                        else "Chưa có kỳ kinh được ghi nhận",
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
+                        style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "Dựa trên trung vị các chu kỳ trước. Mang tính chất tham khảo.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Center
+                        color = if (isPeriodOngoing) MaterialTheme.colorScheme.error
+                        else MaterialTheme.colorScheme.primary
                     )
                 }
-                is CyclePredictionResult.Ineligible -> {
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                // Forecast or status text
+                if (isPeriodOngoing) {
                     Text(
-                        text = "Theo dõi chu kỳ đều đặn",
+                        text = "Hãy chú ý nghỉ ngơi và giữ ấm cơ thể",
                         style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center
+                        fontWeight = FontWeight.ExtraBold,
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
+                } else when (val pred = uiState.predictionResult) {
+                    is CyclePredictionResult.Eligible -> {
+                        val days = uiState.daysUntilNextPeriod
+                        Text(
+                            text = if (days != null && days > 0) "Dự đoán kỳ kinh sau: khoảng $days ngày nữa"
+                            else if (days != null && days == 0L) "Dự đoán kỳ kinh có thể bắt đầu hôm nay"
+                            else "Kỳ kinh có thể đang chậm hơn dự kiến",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.ExtraBold,
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = "Dựa trên trung vị các chu kỳ trước. Mang tính chất tự theo dõi tham khảo.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                    is CyclePredictionResult.Ineligible -> {
+                        Text(
+                            text = "Theo dõi chu kỳ đều đặn",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.ExtraBold,
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = pred.reason.messageVi,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                    null -> {
+                        Text(
+                            text = "Bắt đầu theo dõi chu kỳ của bạn",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.ExtraBold,
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = "Ghi nhận ngày bắt đầu để An Nhiên tính toán nhịp sinh học tự nhiên cho bạn.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(18.dp))
+
+                // Hero Action button (Prominent)
+                Button(
+                    onClick = onTogglePeriod,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (isPeriodOngoing) MaterialTheme.colorScheme.error
+                        else MaterialTheme.colorScheme.primary
+                    ),
+                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier.height(50.dp)
+                ) {
+                    Icon(
+                        imageVector = if (isPeriodOngoing) Icons.Default.Check else Icons.Default.WaterDrop,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp),
+                        tint = Color.White
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = pred.reasonVi,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Center
+                        text = if (isPeriodOngoing) "Đánh dấu kết thúc kỳ kinh" else "Kỳ kinh bắt đầu hôm nay",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 15.sp,
+                        color = Color.White
                     )
                 }
-                null -> {
-                    Text(
-                        text = "Bắt đầu ghi nhận kỳ kinh đầu tiên",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Action button
-            Button(
-                onClick = onTogglePeriod,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (isPeriodOngoing) MaterialTheme.colorScheme.error
-                    else MaterialTheme.colorScheme.primary
-                ),
-                shape = RoundedCornerShape(14.dp)
-            ) {
-                Icon(
-                    imageVector = if (isPeriodOngoing) Icons.Default.Check else Icons.Default.WaterDrop,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = if (isPeriodOngoing) "Đánh dấu kết thúc kỳ kinh" else "Kỳ kinh bắt đầu hôm nay"
-                )
             }
         }
     }

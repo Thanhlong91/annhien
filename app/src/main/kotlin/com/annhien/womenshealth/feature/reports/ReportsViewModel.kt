@@ -50,7 +50,7 @@ class ReportsViewModel @Inject constructor(
     fun loadReportStats() {
         viewModelScope.launch {
             val episodes = cycleRepository.getRecentEpisodes(24)
-            val cycles = CyclePredictionEngine.extractCompletedCycles(episodes)
+            val cycles = CyclePredictionEngine.buildCycleSummaries(episodes)
 
             var avgCycle: Double? = null
             var avgPeriod: Double? = null

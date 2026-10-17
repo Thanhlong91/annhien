@@ -68,6 +68,7 @@ annhien/
 │   ├── MEDICAL_CONTENT_REVIEW.md               # Thẩm định y khoa, tuyên bố miễn trừ
 │   └── IMPLEMENTATION_STATUS.md                # Bảng đối soát tiến độ 100% hoàn thành
 ├── gradle/libs.versions.toml                   # Ghim phiên bản tất cả dependency
+├── PROJECT_MEMORY.md                           # Nhật ký bộ nhớ dự án, tổng hợp bug & các lần fix
 └── README.md
 ```
 

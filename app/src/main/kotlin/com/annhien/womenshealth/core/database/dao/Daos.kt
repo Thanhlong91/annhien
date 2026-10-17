@@ -72,11 +72,17 @@ interface PeriodEpisodeDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(episode: PeriodEpisodeEntity)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(episode: PeriodEpisodeEntity)
+
     @Update
     suspend fun update(episode: PeriodEpisodeEntity)
 
     @Delete
     suspend fun delete(episode: PeriodEpisodeEntity)
+
+    @Query("DELETE FROM period_episode WHERE id = :id")
+    suspend fun deleteById(id: String)
 
     @Query("SELECT COUNT(*) FROM period_episode WHERE isMissedMarker = 0 AND isUncertain = 0 AND endDate IS NOT NULL")
     suspend fun countValidEpisodes(): Int
@@ -91,6 +97,9 @@ interface BleedingObservationDao {
 
     @Query("SELECT * FROM bleeding_observation WHERE periodEpisodeId = :episodeId")
     fun observeByEpisode(episodeId: String): Flow<List<BleedingObservationEntity>>
+
+    @Query("SELECT * FROM bleeding_observation WHERE eventDate = :date")
+    fun observeByDate(date: String): Flow<List<BleedingObservationEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(obs: BleedingObservationEntity)
@@ -131,6 +140,9 @@ interface JournalEntryDao {
 
     @Query("SELECT * FROM journal_entry WHERE eventDate >= :from AND eventDate <= :to ORDER BY eventDate DESC, eventTime DESC")
     fun observeInRange(from: String, to: String): Flow<List<JournalEntryEntity>>
+
+    @Query("SELECT * FROM journal_entry WHERE eventDate >= :from AND eventDate <= :to ORDER BY eventDate DESC, eventTime DESC")
+    suspend fun getByRange(from: String, to: String): List<JournalEntryEntity>
 
     @Query("SELECT * FROM journal_entry WHERE id = :id")
     suspend fun getById(id: String): JournalEntryEntity?
@@ -279,6 +291,9 @@ interface PregnancyProfileDao {
     @Query("SELECT * FROM pregnancy_profile WHERE status = 'ACTIVE' LIMIT 1")
     fun observeActive(): Flow<PregnancyProfileEntity?>
 
+    @Query("SELECT * FROM pregnancy_profile WHERE status = 'ACTIVE' LIMIT 1")
+    suspend fun getActive(): PregnancyProfileEntity?
+
     @Query("SELECT * FROM pregnancy_profile WHERE id = :id")
     suspend fun getById(id: String): PregnancyProfileEntity?
 
@@ -345,6 +360,9 @@ interface DailyHabitDao {
 
     @Query("SELECT * FROM daily_habit")
     fun observeAll(): Flow<List<DailyHabitEntity>>
+
+    @Query("SELECT * FROM daily_habit WHERE habitType = :category")
+    suspend fun getByCategory(category: String): List<DailyHabitEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(habit: DailyHabitEntity)
@@ -482,6 +500,9 @@ interface ReminderDao {
 interface KnowledgeArticleDao {
     @Query("SELECT * FROM knowledge_article WHERE reviewStatus = 'APPROVED' ORDER BY updatedAt DESC")
     fun observeApproved(): Flow<List<KnowledgeArticleEntity>>
+
+    @Query("SELECT * FROM knowledge_article WHERE category = :category AND reviewStatus = 'APPROVED' ORDER BY updatedAt DESC")
+    fun observeByCategory(category: String): Flow<List<KnowledgeArticleEntity>>
 
     @Query("SELECT * FROM knowledge_article ORDER BY updatedAt DESC")
     fun observeAll(): Flow<List<KnowledgeArticleEntity>>

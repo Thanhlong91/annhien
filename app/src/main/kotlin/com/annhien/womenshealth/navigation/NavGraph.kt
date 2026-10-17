@@ -7,6 +7,8 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.font.FontWeight
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
@@ -49,7 +51,10 @@ fun MainNavGraph(
     navController: NavHostController,
     startDestination: String,
     appPreferences: AppPreferences,
-    backupManager: BackupManager
+    backupManager: BackupManager,
+    onLockApp: (disguise: Boolean) -> Unit = {},
+    onToggleTheme: () -> Unit = {},
+    isDarkTheme: Boolean = false
 ) {
     val coroutineScope = rememberCoroutineScope()
     var selectedStage by remember { mutableStateOf(LifeStage.CYCLE) }
@@ -86,7 +91,10 @@ fun MainNavGraph(
             MainScaffold(
                 navController = navController,
                 appPreferences = appPreferences,
-                backupManager = backupManager
+                backupManager = backupManager,
+                onLockApp = onLockApp,
+                onToggleTheme = onToggleTheme,
+                isDarkTheme = isDarkTheme
             )
         }
 
@@ -140,7 +148,8 @@ fun MainNavGraph(
             SettingsScreen(
                 appPreferences = appPreferences,
                 onNavigateToBackup = { navController.navigate(Screen.BackupRestore.route) },
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
+                onLockApp = onLockApp
             )
         }
 
@@ -179,7 +188,10 @@ fun MainNavGraph(
 fun MainScaffold(
     navController: NavHostController,
     appPreferences: AppPreferences,
-    backupManager: BackupManager
+    backupManager: BackupManager,
+    onLockApp: (disguise: Boolean) -> Unit = {},
+    onToggleTheme: () -> Unit = {},
+    isDarkTheme: Boolean = false
 ) {
     var currentTab by remember { mutableStateOf(0) }
 
@@ -191,37 +203,51 @@ fun MainScaffold(
     Scaffold(
         bottomBar = {
             NavigationBar(
-                containerColor = MaterialTheme.colorScheme.surface
+                containerColor = MaterialTheme.colorScheme.surface,
+                tonalElevation = 6.dp
             ) {
+                val itemColors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = MaterialTheme.colorScheme.primary,
+                    selectedTextColor = MaterialTheme.colorScheme.primary,
+                    indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                    unselectedIconColor = MaterialTheme.colorScheme.outline,
+                    unselectedTextColor = MaterialTheme.colorScheme.outline
+                )
+
                 NavigationBarItem(
                     selected = currentTab == 0,
                     onClick = { currentTab = 0 },
-                    icon = { Icon(Icons.Default.Today, contentDescription = "Hôm nay") },
-                    label = { Text("Hôm nay") }
+                    icon = { Icon(Icons.Default.Spa, contentDescription = "Hôm nay") },
+                    label = { Text("Hôm nay", fontWeight = if (currentTab == 0) FontWeight.Bold else FontWeight.Normal) },
+                    colors = itemColors
                 )
                 NavigationBarItem(
                     selected = currentTab == 1,
                     onClick = { currentTab = 1 },
                     icon = { Icon(Icons.Default.CalendarMonth, contentDescription = "Lịch") },
-                    label = { Text("Lịch") }
+                    label = { Text("Lịch", fontWeight = if (currentTab == 1) FontWeight.Bold else FontWeight.Normal) },
+                    colors = itemColors
                 )
                 NavigationBarItem(
                     selected = currentTab == 2,
                     onClick = { currentTab = 2 },
                     icon = { Icon(Icons.Default.EditNote, contentDescription = "Nhật ký") },
-                    label = { Text("Nhật ký") }
+                    label = { Text("Nhật ký", fontWeight = if (currentTab == 2) FontWeight.Bold else FontWeight.Normal) },
+                    colors = itemColors
                 )
                 NavigationBarItem(
                     selected = currentTab == 3,
                     onClick = { currentTab = 3 },
                     icon = { Icon(Icons.Default.BarChart, contentDescription = "Báo cáo") },
-                    label = { Text("Báo cáo") }
+                    label = { Text("Báo cáo", fontWeight = if (currentTab == 3) FontWeight.Bold else FontWeight.Normal) },
+                    colors = itemColors
                 )
                 NavigationBarItem(
                     selected = currentTab == 4,
                     onClick = { currentTab = 4 },
                     icon = { Icon(Icons.Default.GridView, contentDescription = "Tiện ích") },
-                    label = { Text("Tiện ích") }
+                    label = { Text("Tiện ích", fontWeight = if (currentTab == 4) FontWeight.Bold else FontWeight.Normal) },
+                    colors = itemColors
                 )
             }
         }
@@ -250,7 +276,10 @@ fun MainScaffold(
                     viewModel = reportsViewModel
                 )
                 4 -> UtilitiesScreen(
-                    onNavigateToRoute = { route -> navController.navigate(route) }
+                    onNavigateToRoute = { route -> navController.navigate(route) },
+                    onQuickDisguise = { onLockApp(true) },
+                    onToggleTheme = onToggleTheme,
+                    isDarkTheme = isDarkTheme
                 )
             }
         }

@@ -50,14 +50,15 @@ class PregnancyRepositoryImpl @Inject constructor(
             startTime = Instant.ofEpochMilli(startEpochMs),
             endTime = Instant.ofEpochMilli(endEpochMs),
             durationSeconds = durationSeconds,
-            intensity = intensity,
+            intervalFromPreviousSeconds = null,
+            intensityLevel = intensity,
             note = null
         )
         contractionEntryDao.upsert(entity)
     }
 
     override fun observeContractions(pregnancyId: String): Flow<List<ContractionEntryEntity>> {
-        return contractionEntryDao.observeByPregnancy(pregnancyId)
+        return contractionEntryDao.observeRecent(pregnancyId)
     }
 
     override fun observeActivePostpartum(): Flow<PostpartumProfileEntity?> {
@@ -73,6 +74,6 @@ class PregnancyRepositoryImpl @Inject constructor(
     }
 
     override fun observeRecentFeedings(postpartumId: String): Flow<List<FeedingEntryEntity>> {
-        return feedingEntryDao.observeByPostpartum(postpartumId)
+        return feedingEntryDao.observeRecent(postpartumId)
     }
 }

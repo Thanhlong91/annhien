@@ -58,12 +58,14 @@ class CalendarViewModel @Inject constructor(
     private fun loadDataForMonth(yearMonth: YearMonth) {
         viewModelScope.launch {
             cycleRepository.observePeriodEpisodes().collect { episodes ->
-                val prediction = CyclePredictionEngine.predictNextPeriod(episodes, LocalDate.now())
+                val summaries = CyclePredictionEngine.buildCycleSummaries(episodes)
+                val last = episodes.sortedByDescending { it.startDate }.firstOrNull()
+                val prediction = if (last != null) CyclePredictionEngine.predictNextPeriod(last.startDate, summaries) else null
                 var pStart: LocalDate? = null
                 var pEnd: LocalDate? = null
-                if (prediction is CyclePredictionResult.Predicted) {
-                    pStart = prediction.expectedStartDate
-                    pEnd = prediction.expectedEndDate
+                if (prediction is CyclePredictionResult.Eligible) {
+                    pStart = prediction.prediction.earliestEstimate
+                    pEnd = prediction.prediction.latestEstimate
                 }
 
                 _uiState.update {
@@ -104,17 +106,15 @@ class CalendarViewModel @Inject constructor(
     fun togglePeriodOnSelectedDate() {
         viewModelScope.launch {
             val date = _uiState.value.selectedDate
-            val existing = _uiState.value.periodEpisodes.find { ep ->
-                val end = ep.endDate ?: LocalDate.now()
-                !date.isBefore(ep.startDate) && !date.isAfter(end)
-            }
+            cycleRepository.togglePeriodDay(date)
+            loadDayDetails(date)
+        }
+    }
 
-            if (existing != null) {
-                cycleRepository.deleteEpisode(existing.id)
-            } else {
-                cycleRepository.recordPeriodStart(date, isConfirmed = true)
-            }
-            loadDataForMonth(_uiState.value.currentYearMonth)
+    fun recordPeriodRange(startDate: LocalDate, endDate: LocalDate) {
+        viewModelScope.launch {
+            cycleRepository.recordPeriodRange(startDate, endDate)
+            loadDayDetails(_uiState.value.selectedDate)
         }
     }
 }
