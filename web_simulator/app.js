@@ -929,57 +929,62 @@ function openModule(type) {
             body.innerHTML = `
                 <div class="card card-tip" style="margin-bottom: 12px;">
                     <strong><i class="fa-solid fa-cloud"></i> Nguồn mở Open Food Facts</strong>
-                    <p class="tip-desc">Tra cứu thành phần dinh dưỡng, năng lượng (Kcal) và vi chất của hàng triệu sản phẩm.</p>
+                    <p class="tip-desc">Tra cứu thành phần dinh dưỡng, năng lượng (Kcal) và vi chất của hàng triệu sản phẩm thực phẩm toàn cầu.</p>
                 </div>
-                <div class="search-bar-wrap" style="margin-bottom: 12px;">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="text" id="sim-food-query" placeholder="Nhập tên thực phẩm (vd: sữa chua, yến mạch...)" value="Yến mạch nguyên cám" style="border: none; background: transparent; width: 100%; outline: none;">
+                <div class="search-bar-wrap" style="margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-magnifying-glass" style="color: var(--text-muted);"></i>
+                    <input type="text" id="sim-food-query" placeholder="Nhập tên thực phẩm (vd: sữa chua, yến mạch...)" value="" style="border: none; background: transparent; flex: 1; outline: none; font-size: 0.95rem;" onkeydown="if(event.key==='Enter') simSearchFood()">
                 </div>
-                <div style="display: flex; gap: 8px; margin-bottom: 14px;">
-                    <button class="btn-primary" style="flex: 1;" onclick="simSearchFood()"><i class="fa-solid fa-magnifying-glass"></i> Tra cứu</button>
-                    <button class="btn-outline" onclick="simSampleBarcode()"><i class="fa-solid fa-barcode"></i> Mã vạch mẫu</button>
+                <div style="display: flex; gap: 8px; margin-bottom: 6px;">
+                    <button class="btn-primary" style="flex: 1;" id="btn-food-search" onclick="simSearchFood()"><i class="fa-solid fa-magnifying-glass"></i> Tra cứu</button>
+                    <button class="btn-outline" onclick="simSampleBarcode()"><i class="fa-solid fa-barcode"></i> Mã vạch</button>
+                </div>
+                <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px;">
+                    <button class="btn-outline" style="font-size: 0.75rem; padding: 4px 10px;" onclick="document.getElementById('sim-food-query').value='Sữa chua'; simSearchFood()">🥛 Sữa chua</button>
+                    <button class="btn-outline" style="font-size: 0.75rem; padding: 4px 10px;" onclick="document.getElementById('sim-food-query').value='Yến mạch'; simSearchFood()">🌾 Yến mạch</button>
+                    <button class="btn-outline" style="font-size: 0.75rem; padding: 4px 10px;" onclick="document.getElementById('sim-food-query').value='Chuối'; simSearchFood()">🍌 Chuối</button>
+                    <button class="btn-outline" style="font-size: 0.75rem; padding: 4px 10px;" onclick="document.getElementById('sim-food-query').value='Trứng gà'; simSearchFood()">🥚 Trứng</button>
                 </div>
                 <div id="sim-food-results" style="display: flex; flex-direction: column; gap: 10px;">
-                    <div class="card" style="padding: 14px;">
-                        <div class="card-row">
-                            <strong>Yến mạch cán dẹt Úc (Rolled Oats)</strong>
-                            <span class="badge-num" style="background: var(--primary-container); color: var(--primary);">379 Kcal / 100g</span>
-                        </div>
-                        <p class="tip-desc">Thương hiệu: Quaker Oats • Quy cách: 500g</p>
-                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 10px; font-size: 0.8rem; text-align: center;">
-                            <div style="background: var(--surface-variant); padding: 6px; border-radius: 8px;">Đạm: <strong>13.2g</strong></div>
-                            <div style="background: var(--surface-variant); padding: 6px; border-radius: 8px;">Carb: <strong>67.7g</strong></div>
-                            <div style="background: var(--surface-variant); padding: 6px; border-radius: 8px;">Xơ: <strong>10.1g</strong></div>
-                        </div>
-                    </div>
+                    <p class="tip-desc" style="text-align: center; padding: 20px; color: var(--text-muted);"><i class="fa-solid fa-bowl-food" style="font-size: 1.8rem; display: block; margin-bottom: 8px; opacity: 0.4;"></i>Nhập tên thực phẩm để tra cứu thông tin dinh dưỡng</p>
                 </div>
             `;
             break;
 
         case 'healthtopics':
             title.textContent = "Đề tài sức khỏe phụ nữ (MyHealthfinder)";
+            const HT_TOPICS = [
+                { cat: 'Sàng lọc phụ khoa', catColor: 'rose', icon: '🔬', title: 'Tầm soát ung thư cổ tử cung định kỳ', body: 'Xét nghiệm Pap smear mỗi 3 năm (21–29 tuổi) hoặc phối hợp HPV mỗi 5 năm (30–65 tuổi).' },
+                { cat: 'Thai kỳ & Dinh dưỡng', catColor: 'lavender', icon: '🌿', title: 'Bổ sung Axit Folic trước và trong thai kỳ', body: 'Phụ nữ dự định mang thai nên bổ sung ít nhất 400 mcg axit folic mỗi ngày để phòng ngừa dị tật ống thần kinh.' },
+                { cat: 'Hậu sản', catColor: 'terracotta', icon: '💛', title: 'Chăm sóc sức khỏe tinh thần sau sinh', body: 'Nhận diện sớm trầm cảm sau sinh (Baby Blues kéo dài trên 2 tuần) và liên hệ bác sĩ tâm lý kịp thời.' },
+                { cat: 'Tim mạch & Huyết áp', catColor: 'sage', icon: '❤️', title: 'Kiểm soát huyết áp ở phụ nữ', body: 'Huyết áp cao không triệu chứng là "kẻ giết người thầm lặng". Kiểm tra định kỳ hằng năm.' },
+                { cat: 'Xương khớp', catColor: 'lavender', icon: '🦴', title: 'Phòng ngừa loãng xương từ tuổi trung niên', body: 'Bổ sung canxi và vitamin D đầy đủ, vận động thể lực thường xuyên, tránh hút thuốc lá.' },
+                { cat: 'Sức khỏe tâm thần', catColor: 'rose', icon: '🧠', title: 'Quản lý stress & lo âu ở phụ nữ', body: 'Phụ nữ có tỉ lệ rối loạn lo âu gấp đôi nam giới. Liệu pháp nhận thức hành vi (CBT) và thiền định là những biện pháp được khuyến nghị.' }
+            ];
+            const htCatColors = { rose: 'var(--rose-light)|var(--rose)', lavender: 'var(--lavender-light)|var(--lavender)', terracotta: 'var(--terracotta-light)|var(--terracotta)', sage: 'var(--sage-light)|var(--sage)' };
+            let htFiltered = HT_TOPICS;
             body.innerHTML = `
                 <div class="card card-tip" style="margin-bottom: 12px;">
                     <strong><i class="fa-solid fa-user-doctor"></i> MyHealthfinder v4 API</strong>
-                    <p class="tip-desc">Dữ liệu y tế dự phòng từ Bộ Y tế & Dịch vụ Nhân sinh Hoa Kỳ (HHS).</p>
+                    <p class="tip-desc">Dữ liệu y tế dự phòng từ Bộ Y tế & Dịch vụ Nhân sinh Hoa Kỳ (HHS). Cache 72 giờ.</p>
                 </div>
-                <div style="display: flex; flex-direction: column; gap: 10px;">
-                    <div class="card" style="padding: 14px;">
-                        <span class="badge-num" style="background: var(--rose-light); color: var(--rose); margin-bottom: 6px; display: inline-block;">Sàng lọc phụ khoa</span>
-                        <h4 style="margin: 0 0 6px 0;">Tầm soát ung thư cổ tử cung định kỳ</h4>
-                        <p class="tip-desc">Khuyến nghị xét nghiệm Pap smear mỗi 3 năm cho phụ nữ từ 21-29 tuổi, và xét nghiệm phối hợp HPV mỗi 5 năm từ 30-65 tuổi.</p>
-                    </div>
-                    <div class="card" style="padding: 14px;">
-                        <span class="badge-num" style="background: var(--lavender-light); color: var(--lavender); margin-bottom: 6px; display: inline-block;">Thai kỳ & Dinh dưỡng</span>
-                        <h4 style="margin: 0 0 6px 0;">Bổ sung Axit Folic trước và trong thai kỳ</h4>
-                        <p class="tip-desc">Phụ nữ dự định mang thai nên bổ sung ít nhất 400 mcg axit folic mỗi ngày để phòng ngừa dị tật ống thần kinh ở thai nhi.</p>
-                    </div>
-                    <div class="card" style="padding: 14px;">
-                        <span class="badge-num" style="background: var(--terracotta-light); color: var(--terracotta); margin-bottom: 6px; display: inline-block;">Hậu sản</span>
-                        <h4 style="margin: 0 0 6px 0;">Chăm sóc sức khỏe tinh thần sau sinh</h4>
-                        <p class="tip-desc">Nhận diện sớm các dấu hiệu trầm cảm sau sinh (Baby Blues kéo dài trên 2 tuần) và trao đổi ngay với chuyên gia tâm lý hoặc bác sĩ.</p>
-                    </div>
+                <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px;">
+                    <button class="btn-primary-sm" onclick="simFilterHealthTopics('all')">Tất cả (${HT_TOPICS.length})</button>
+                    <button class="btn-outline" style="font-size:0.75rem; padding:4px 10px;" onclick="simFilterHealthTopics('sàng')">Sàng lọc</button>
+                    <button class="btn-outline" style="font-size:0.75rem; padding:4px 10px;" onclick="simFilterHealthTopics('thai')">Thai kỳ</button>
+                    <button class="btn-outline" style="font-size:0.75rem; padding:4px 10px;" onclick="simFilterHealthTopics('tâm')">Tâm lý</button>
                 </div>
+                <div id="ht-topics-list" style="display: flex; flex-direction: column; gap: 10px;">
+                    ${HT_TOPICS.map(t => {
+                        const [bg, col] = (htCatColors[t.catColor] || 'var(--surface-variant)|var(--on-surface)').split('|');
+                        return `<div class="card" style="padding: 14px;">
+                            <span class="badge-num" style="background: ${bg}; color: ${col}; margin-bottom: 6px; display: inline-block;">${t.icon} ${t.cat}</span>
+                            <h4 style="margin: 0 0 6px 0;">${t.title}</h4>
+                            <p class="tip-desc">${t.body}</p>
+                        </div>`;
+                    }).join('')}
+                </div>
+                <p style="font-size: 0.72rem; color: var(--text-muted); text-align: center; margin-top: 14px;">✓ Từ bộ nhớ tạm • Cập nhật: 2 giờ trước • Nguồn: health.gov/myhealthfinder</p>
             `;
             break;
 
@@ -988,28 +993,26 @@ function openModule(type) {
             body.innerHTML = `
                 <div class="card card-tip" style="margin-bottom: 12px;">
                     <strong><i class="fa-solid fa-wind"></i> Trạm quan trắc OpenAQ v3</strong>
-                    <p class="tip-desc">Dữ liệu quan trắc hạt bụi mịn PM2.5, PM10 theo thời gian thực.</p>
+                    <p class="tip-desc">Dữ liệu quan trắc hạt bụi mịn PM2.5, PM10, NO₂ theo thời gian thực từ mạng lưới toàn cầu.</p>
                 </div>
+
                 <div class="card" style="padding: 14px; margin-bottom: 12px;">
-                    <div class="card-row">
+                    <div class="card-row" style="margin-bottom: 10px;">
                         <div>
-                            <strong>Tọa độ tìm kiếm:</strong>
-                            <p class="tip-desc" id="sim-aq-coords">21.0278° N, 105.8342° E (Hà Nội)</p>
+                            <strong>Vị trí tra cứu</strong>
+                            <p class="tip-desc" id="sim-aq-coords">21.0278° N, 105.8342° E (Hà Nội, VN)</p>
                         </div>
-                        <button class="btn-primary-sm" onclick="simRefreshAirQuality()"><i class="fa-solid fa-rotate"></i> Cập nhật</button>
+                        <button class="btn-primary-sm" onclick="simRefreshAirQuality()" id="btn-aq-refresh"><i class="fa-solid fa-rotate"></i> Cập nhật</button>
+                    </div>
+                    <div style="display: flex; gap: 6px;">
+                        <button class="btn-outline" style="font-size:0.75rem; padding:4px 10px;" onclick="simLoadAQCity('hanoi')">📍 Hà Nội</button>
+                        <button class="btn-outline" style="font-size:0.75rem; padding:4px 10px;" onclick="simLoadAQCity('hcm')">📍 TP. HCM</button>
+                        <button class="btn-outline" style="font-size:0.75rem; padding:4px 10px;" onclick="simLoadAQCity('danang')">📍 Đà Nẵng</button>
                     </div>
                 </div>
-                <div id="sim-aq-station" class="card" style="padding: 14px;">
-                    <div class="card-row">
-                        <strong>Trạm ĐSQ Hoa Kỳ — Hà Nội (ID: 3274)</strong>
-                        <span class="badge-num" style="background: #FFF3CD; color: #856404;">AQI: 85 (Trung bình)</span>
-                    </div>
-                    <p class="tip-desc">Quốc gia: VN • Tọa độ: 21.02, 105.81</p>
-                    <div style="margin-top: 10px; display: flex; justify-content: space-between; font-size: 0.85rem;">
-                        <span>Bụi mịn PM2.5: <strong>28.4 µg/m³</strong></span>
-                        <span style="color: var(--text-muted);">Cập nhật: 15 phút trước</span>
-                    </div>
-                    <p style="font-size: 0.75rem; color: var(--primary); margin-top: 8px;">✓ Dữ liệu lưu trong bộ nhớ tạm (Cache 30 phút)</p>
+
+                <div id="sim-aq-station">
+                    ${simRenderAQStation({ name: 'Trạm ĐSQ Hoa Kỳ — Hà Nội', id: 3274, pm25: 28.4, pm10: 42.1, no2: 18.5, lat: 21.02, lon: 105.81, updated: '15 phút trước', cached: true })}
                 </div>
             `;
             break;
@@ -1017,45 +1020,84 @@ function openModule(type) {
         case 'onlineutilities':
             title.textContent = "Quản lý tiện ích trực tuyến";
             let simNetOnline = localStorage.getItem('annhien_net_online') !== 'false';
+            const simCacheItems = JSON.parse(localStorage.getItem('annhien_sim_cache') || '[{"key":"aq_hanoi","size":"8.2 KB","age":"15 phút"},{"key":"food_yenmach","size":"3.1 KB","age":"2 giờ"},{"key":"healthtopics_women","size":"28.4 KB","age":"2 giờ"},{"key":"aq_hcm","size":"9.0 KB","age":"45 phút"}]');
+            const totalKb = simCacheItems.reduce((s, i) => s + parseFloat(i.size), 0).toFixed(1);
             body.innerHTML = `
-                <div class="card" style="display: flex; justify-content: space-between; align-items: center; padding: 14px; margin-bottom: 14px;">
+                <div class="card" style="display: flex; justify-content: space-between; align-items: center; padding: 14px; margin-bottom: 10px;">
                     <div>
-                        <strong>Cho phép kết nối Internet</strong>
-                        <p class="tip-desc">Bật/tắt các tính năng tra cứu ngoài (Offline-First)</p>
+                        <strong>Kết nối Internet</strong>
+                        <p class="tip-desc">${simNetOnline ? '🟢 Đang kết nối — Offline-First bật' : '🔴 Ngoại tuyến hoàn toàn'}</p>
                     </div>
-                    <input type="checkbox" id="sim-net-toggle" ${simNetOnline ? 'checked' : ''} onchange="simToggleNetwork(this.checked)" style="transform: scale(1.3);">
+                    <input type="checkbox" id="sim-net-toggle" ${simNetOnline ? 'checked' : ''} onchange="simToggleNetwork(this.checked)" style="transform: scale(1.3); accent-color: var(--primary);">
                 </div>
-                <h4 class="section-title">Trạng thái nhà cung cấp & Hạn mức</h4>
-                <div style="display: flex; flex-direction: column; gap: 8px;">
-                    <div class="card" style="padding: 12px; display: flex; justify-content: space-between; align-items: center;">
-                        <div>
-                            <strong>Open Food Facts</strong>
-                            <p class="tip-desc">User-Agent: AnNhien/1.0 • Miễn phí không giới hạn</p>
+
+                <h4 class="section-title">Nhà cung cấp & Trạng thái</h4>
+                <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px;">
+                    <div class="card" style="padding: 12px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong>Open Food Facts</strong>
+                                <p class="tip-desc">User-Agent: AnNhien/1.0 • Không giới hạn</p>
+                            </div>
+                            <span class="badge-num" style="background: #d4f1d4; color: #1a7a1a;">✓ Sẵn sàng</span>
                         </div>
-                        <span class="badge-num" style="background: var(--sage-light); color: var(--sage);">Sẵn sàng</span>
+                        <div style="margin-top: 8px; display: flex; gap: 12px; font-size: 0.78rem; color: var(--text-muted);">
+                            <span>Yêu cầu hôm nay: <strong>3</strong></span>
+                            <span>Cache: <strong>3.1 KB</strong></span>
+                            <span>TTL: <strong>6 giờ</strong></span>
+                        </div>
                     </div>
-                    <div class="card" style="padding: 12px; display: flex; justify-content: space-between; align-items: center;">
-                        <div>
-                            <strong>MyHealthfinder v4</strong>
-                            <p class="tip-desc">HHS USA API • Cache 72 giờ</p>
+                    <div class="card" style="padding: 12px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong>MyHealthfinder v4 (HHS)</strong>
+                                <p class="tip-desc">Không cần API Key • TTL 72 giờ</p>
+                            </div>
+                            <span class="badge-num" style="background: #d4f1d4; color: #1a7a1a;">✓ Sẵn sàng</span>
                         </div>
-                        <span class="badge-num" style="background: var(--sage-light); color: var(--sage);">Sẵn sàng</span>
+                        <div style="margin-top: 8px; display: flex; gap: 12px; font-size: 0.78rem; color: var(--text-muted);">
+                            <span>Yêu cầu hôm nay: <strong>1</strong></span>
+                            <span>Cache: <strong>28.4 KB</strong></span>
+                            <span>Chủ đề: <strong>6</strong></span>
+                        </div>
                     </div>
-                    <div class="card" style="padding: 12px; display: flex; justify-content: space-between; align-items: center;">
-                        <div>
-                            <strong>OpenAQ v3</strong>
-                            <p class="tip-desc">Header: X-API-Key • Cache 30 phút</p>
+                    <div class="card" style="padding: 12px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong>OpenAQ v3</strong>
+                                <p class="tip-desc">Header: X-API-Key (nếu có) • TTL 30 phút</p>
+                            </div>
+                            <span class="badge-num" style="background: #d4f1d4; color: #1a7a1a;">✓ Sẵn sàng</span>
                         </div>
-                        <span class="badge-num" style="background: var(--sage-light); color: var(--sage);">Sẵn sàng</span>
+                        <div style="margin-top: 8px; display: flex; gap: 12px; font-size: 0.78rem; color: var(--text-muted);">
+                            <span>Yêu cầu hôm nay: <strong>2</strong></span>
+                            <span>Cache: <strong>17.2 KB</strong></span>
+                            <span>Rate limit: <strong>OK</strong></span>
+                        </div>
                     </div>
                 </div>
-                <div class="card" style="margin-top: 14px;">
+
+                <h4 class="section-title">Bộ nhớ đệm (OnlineCacheManager)</h4>
+                <div style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px;">
+                    ${simCacheItems.map(item => `
+                    <div class="card" style="padding: 10px 14px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <strong style="font-size: 0.85rem; font-family: monospace;">${item.key}</strong>
+                            <p class="tip-desc" style="margin: 0;">${item.size} • ${item.age} trước</p>
+                        </div>
+                        <span class="badge-num" style="background: var(--surface-variant);">Còn hạn</span>
+                    </div>`).join('')}
+                </div>
+                <div class="card" style="padding: 14px;">
                     <div class="card-row">
                         <div>
-                            <strong>Bộ nhớ đệm (Cache)</strong>
-                            <p class="tip-desc">Dung lượng tạm: ~48 KB (4 mục)</p>
+                            <strong>Tổng dung lượng tạm</strong>
+                            <p class="tip-desc">${totalKb} KB / 5.0 MB (${(totalKb/5000*100).toFixed(1)}%)</p>
                         </div>
-                        <button class="btn-outline" onclick="alert('Đã dọn dẹp toàn bộ bộ nhớ tạm (OnlineCacheManager)!')">Xóa cache</button>
+                        <button class="btn-outline" onclick="simClearAllCache()"><i class="fa-solid fa-trash"></i> Xóa tất cả</button>
+                    </div>
+                    <div style="height: 6px; background: var(--surface-variant); border-radius: 3px; margin-top: 10px; overflow: hidden;">
+                        <div style="height: 100%; width: ${(totalKb/5000*100).toFixed(1)}%; background: var(--primary); border-radius: 3px; transition: width 0.5s;"></div>
                     </div>
                 </div>
             `;
@@ -1557,68 +1599,198 @@ function saveMedicationItem() {
 // ========================================================
 // ONLINE UTILITIES SIMULATOR ACTIONS
 // ========================================================
+
+// --- Food Search Database ---
+const SIM_FOOD_DB = {
+    'sữa chua': [
+        { name: 'Sữa chua không đường Vinamilk', brand: 'Vinamilk', qty: 'Hộp 100g', kcal: 61, pro: 3.7, carb: 6.2, fat: 2.1, extra: 'Canxi: 110mg', code: '8934673100345' },
+        { name: 'Sữa chua Greek Yogurt Meadow', brand: 'Meadow Fresh', qty: 'Hũ 150g', kcal: 95, pro: 8.5, carb: 7.4, fat: 3.2, extra: 'Probiotics: L. acidophilus' }
+    ],
+    'yến mạch': [
+        { name: 'Yến mạch cán dẹt Úc (Rolled Oats)', brand: 'Quaker Oats', qty: 'Túi 500g', kcal: 379, pro: 13.2, carb: 67.7, fat: 6.5, extra: 'Xơ: 10.1g' },
+        { name: 'Yến mạch nguyên hạt hữu cơ', brand: 'Bob\'s Red Mill', qty: 'Túi 900g', kcal: 370, pro: 13.0, carb: 66.3, fat: 6.9, extra: 'Xơ hòa tan: 4g (Beta-Glucan)' }
+    ],
+    'chuối': [
+        { name: 'Chuối tiêu tươi', brand: 'Tự nhiên', qty: '1 trái ~120g', kcal: 89, pro: 1.1, carb: 22.8, fat: 0.3, extra: 'Kali: 358mg' }
+    ],
+    'trứng gà': [
+        { name: 'Trứng gà ta tươi (1 quả 60g)', brand: 'Tự nhiên', qty: '1 quả 60g', kcal: 91, pro: 7.7, carb: 0.6, fat: 6.3, extra: 'Vitamin D: 1.1mcg' },
+        { name: 'Trứng gà công nghiệp (1 quả 65g)', brand: 'Ba Huân', qty: '1 quả 65g', kcal: 98, pro: 8.1, carb: 0.5, fat: 6.8, extra: 'Choline: 147mg' }
+    ]
+};
+
+function simBuildFoodCard(p) {
+    return `<div class="card" style="padding: 14px;">
+        <div class="card-row">
+            <strong>${p.name}</strong>
+            <span class="badge-num" style="background: var(--primary-container); color: var(--primary);">${p.kcal} Kcal / 100g</span>
+        </div>
+        <p class="tip-desc">Thương hiệu: ${p.brand} • Quy cách: ${p.qty}</p>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 10px; font-size: 0.78rem; text-align: center;">
+            <div style="background: var(--surface-variant); padding: 6px; border-radius: 8px;">Đạm<br><strong>${p.pro}g</strong></div>
+            <div style="background: var(--surface-variant); padding: 6px; border-radius: 8px;">Carb<br><strong>${p.carb}g</strong></div>
+            <div style="background: var(--surface-variant); padding: 6px; border-radius: 8px;">Béo<br><strong>${p.fat}g</strong></div>
+            <div style="background: var(--surface-variant); padding: 6px; border-radius: 8px;">Thêm<br><strong style="font-size:0.7rem;">${p.extra.split(':')[0]}</strong></div>
+        </div>
+        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">📌 ${p.extra}</p>
+        <p style="font-size: 0.72rem; color: var(--primary); margin-top: 4px;">✓ Đã cache vào OnlineCacheManager (TTL 6h)</p>
+    </div>`;
+}
+
 function simToggleNetwork(enabled) {
     localStorage.setItem('annhien_net_online', enabled ? 'true' : 'false');
-    alert(enabled ? "Đã bật kết nối Internet cho các tiện ích tra cứu trực tuyến." : "Đã chuyển về chế độ 100% Ngoại tuyến (Offline-First).");
+    alert(enabled ? '🟢 Đã bật kết nối Internet (Offline-First Mode).' : '🔴 Đã chuyển về Ngoại tuyến hoàn toàn.');
 }
 
 function simSearchFood() {
-    const q = document.getElementById('sim-food-query').value.trim();
+    const q = (document.getElementById('sim-food-query').value || '').trim().toLowerCase();
     const res = document.getElementById('sim-food-results');
     if (!q) {
-        alert("Vui lòng nhập tên thực phẩm cần tra cứu!");
+        alert('Vui lòng nhập tên thực phẩm cần tra cứu!');
         return;
     }
-    res.innerHTML = `
-        <div class="card" style="padding: 14px;">
-            <div class="card-row">
-                <strong>${q}</strong>
-                <span class="badge-num" style="background: var(--primary-container); color: var(--primary);">245 Kcal / 100g</span>
-            </div>
-            <p class="tip-desc">Dữ liệu nguồn: Open Food Facts API (Trực tuyến)</p>
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 10px; font-size: 0.8rem; text-align: center;">
-                <div style="background: var(--surface-variant); padding: 6px; border-radius: 8px;">Đạm: <strong>8.5g</strong></div>
-                <div style="background: var(--surface-variant); padding: 6px; border-radius: 8px;">Carb: <strong>42.0g</strong></div>
-                <div style="background: var(--surface-variant); padding: 6px; border-radius: 8px;">Chất béo: <strong>4.2g</strong></div>
-            </div>
-            <p style="font-size: 0.75rem; color: var(--primary); margin-top: 8px;">✓ Đã lưu vào bộ nhớ tạm để xem ngoại tuyến</p>
-        </div>
-    `;
+    // Simulate network loading
+    res.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted);"><i class="fa-solid fa-spinner fa-spin" style="font-size:1.5rem;"></i><p style="margin-top:8px;">Đang tra cứu Open Food Facts...</p></div>`;
+    setTimeout(() => {
+        const key = Object.keys(SIM_FOOD_DB).find(k => q.includes(k) || k.includes(q));
+        if (key) {
+            res.innerHTML = `<p style="font-size:0.8rem; color: var(--text-muted); margin-bottom: 8px;">Tìm thấy ${SIM_FOOD_DB[key].length} kết quả cho "${q}"</p>` +
+                SIM_FOOD_DB[key].map(simBuildFoodCard).join('');
+        } else {
+            res.innerHTML = `<div class="card" style="padding: 14px;">
+                <div class="card-row">
+                    <strong>${q.charAt(0).toUpperCase() + q.slice(1)}</strong>
+                    <span class="badge-num" style="background: var(--primary-container); color: var(--primary);">185 Kcal / 100g</span>
+                </div>
+                <p class="tip-desc">Dữ liệu tổng hợp từ Open Food Facts API</p>
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 10px; font-size: 0.78rem; text-align: center;">
+                    <div style="background: var(--surface-variant); padding: 6px; border-radius: 8px;">Đạm<br><strong>7.2g</strong></div>
+                    <div style="background: var(--surface-variant); padding: 6px; border-radius: 8px;">Carb<br><strong>28.4g</strong></div>
+                    <div style="background: var(--surface-variant); padding: 6px; border-radius: 8px;">Béo<br><strong>5.1g</strong></div>
+                    <div style="background: var(--surface-variant); padding: 6px; border-radius: 8px;">Xơ<br><strong>2.8g</strong></div>
+                </div>
+                <p style="font-size: 0.72rem; color: var(--primary); margin-top: 6px;">✓ Đã lưu vào OnlineCacheManager (TTL 6h)</p>
+            </div>`;
+        }
+    }, 800);
 }
 
 function simSampleBarcode() {
     const res = document.getElementById('sim-food-results');
-    res.innerHTML = `
-        <div class="card" style="padding: 14px;">
-            <div class="card-row">
-                <strong>Sữa chua không đường Vinamilk (8934673100345)</strong>
-                <span class="badge-num" style="background: var(--primary-container); color: var(--primary);">61 Kcal / 100g</span>
+    res.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted);"><i class="fa-solid fa-spinner fa-spin" style="font-size:1.5rem;"></i><p style="margin-top:8px;">Đang quét mã vạch 8934673100345...</p></div>`;
+    setTimeout(() => {
+        res.innerHTML = simBuildFoodCard({ name: 'Sữa chua không đường Vinamilk', brand: 'Vinamilk', qty: 'Hộp 100g', kcal: 61, pro: 3.7, carb: 6.2, fat: 2.1, extra: 'Canxi: 110mg', code: '8934673100345' });
+    }, 600);
+}
+
+// --- Air Quality Helpers ---
+const SIM_AQ_DATA = {
+    hanoi: { city: 'Hà Nội, VN', name: 'Trạm ĐSQ Hoa Kỳ — Hà Nội', id: 3274, pm25: 28.4, pm10: 42.1, no2: 18.5, lat: 21.0245, lon: 105.8412, updated: '15 phút trước', cached: true },
+    hcm:   { city: 'TP. HCM, VN', name: 'Trạm Tân Sơn Hòa — Q. Tân Phú', id: 4621, pm25: 38.7, pm10: 58.3, no2: 24.2, lat: 10.8041, lon: 106.6682, updated: '8 phút trước', cached: false },
+    danang:{ city: 'Đà Nẵng, VN', name: 'Trạm Ngũ Hành Sơn', id: 5108, pm25: 12.1, pm10: 18.6, no2: 9.8, lat: 16.0471, lon: 108.2062, updated: '22 phút trước', cached: true }
+};
+
+function simAQILevel(pm25) {
+    if (pm25 <= 12)  return { label: 'Tốt', bg: '#D4EDDA', color: '#155724' };
+    if (pm25 <= 35)  return { label: 'Trung bình', bg: '#FFF3CD', color: '#856404' };
+    if (pm25 <= 55)  return { label: 'Không tốt cho nhóm nhạy cảm', bg: '#FFE8D0', color: '#995200' };
+    if (pm25 <= 150) return { label: 'Xấu', bg: '#FFCDD2', color: '#B71C1C' };
+    return { label: 'Rất xấu', bg: '#E1BEE7', color: '#6A1B9A' };
+}
+
+function simRenderAQStation(d) {
+    const lvl = simAQILevel(d.pm25);
+    const pct = Math.min(100, (d.pm25 / 150) * 100).toFixed(0);
+    const barColor = d.pm25 <= 12 ? '#43a047' : d.pm25 <= 35 ? '#f9a825' : d.pm25 <= 55 ? '#ef6c00' : '#c62828';
+    return `<div class="card" style="padding: 14px;">
+        <div class="card-row" style="margin-bottom: 8px;">
+            <div>
+                <strong>${d.name}</strong>
+                <p class="tip-desc" style="margin:0;">ID: ${d.id} • ${d.lat.toFixed(3)}°N, ${d.lon.toFixed(3)}°E</p>
             </div>
-            <p class="tip-desc">Thương hiệu: Vinamilk • Quy cách: Hộp 100g</p>
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 10px; font-size: 0.8rem; text-align: center;">
-                <div style="background: var(--surface-variant); padding: 6px; border-radius: 8px;">Canxi: <strong>110mg</strong></div>
-                <div style="background: var(--surface-variant); padding: 6px; border-radius: 8px;">Đạm: <strong>3.7g</strong></div>
-                <div style="background: var(--surface-variant); padding: 6px; border-radius: 8px;">Đường: <strong>4.5g</strong></div>
-            </div>
-            <p style="font-size: 0.75rem; color: var(--primary); margin-top: 8px;">✓ Quét mã vạch thành công từ Open Food Facts</p>
+            <span class="badge-num" style="background: ${lvl.bg}; color: ${lvl.color}; white-space: nowrap;">${lvl.label}</span>
         </div>
-    `;
+        <div style="background: var(--surface-variant); border-radius: 8px; overflow: hidden; height: 8px; margin-bottom: 12px;">
+            <div style="height: 100%; width: ${pct}%; background: ${barColor}; border-radius: 8px; transition: width 0.5s;"></div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; font-size: 0.82rem; text-align: center; margin-bottom: 10px;">
+            <div style="background: var(--surface-variant); padding: 8px; border-radius: 10px;">
+                <div style="font-weight: 700; font-size: 1.1rem; color: ${barColor};">${d.pm25}</div>
+                <div style="color: var(--text-muted); font-size: 0.72rem;">PM2.5 µg/m³</div>
+            </div>
+            <div style="background: var(--surface-variant); padding: 8px; border-radius: 10px;">
+                <div style="font-weight: 700; font-size: 1.1rem;">${d.pm10}</div>
+                <div style="color: var(--text-muted); font-size: 0.72rem;">PM10 µg/m³</div>
+            </div>
+            <div style="background: var(--surface-variant); padding: 8px; border-radius: 10px;">
+                <div style="font-weight: 700; font-size: 1.1rem;">${d.no2}</div>
+                <div style="color: var(--text-muted); font-size: 0.72rem;">NO₂ µg/m³</div>
+            </div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted);">
+            <span>⏱ Cập nhật: ${d.updated}</span>
+            <span>${d.cached ? '💾 Từ cache (TTL 30 phút)' : '🌐 Trực tiếp từ OpenAQ v3'}</span>
+        </div>
+    </div>`;
+}
+
+function simLoadAQCity(city) {
+    const data = SIM_AQ_DATA[city];
+    if (!data) return;
+    const coordEl = document.getElementById('sim-aq-coords');
+    if (coordEl) coordEl.textContent = `${data.lat.toFixed(4)}° N, ${data.lon.toFixed(4)}° E (${data.city})`;
+    const el = document.getElementById('sim-aq-station');
+    if (!el) return;
+    el.innerHTML = `<div style="text-align:center; padding: 16px; color: var(--text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> Đang kết nối OpenAQ v3...</div>`;
+    setTimeout(() => {
+        el.innerHTML = simRenderAQStation(data);
+    }, 700);
 }
 
 function simRefreshAirQuality() {
     const el = document.getElementById('sim-aq-station');
-    if (el) {
-        el.innerHTML = `
-            <div class="card-row">
-                <strong>Trạm Láng — Hà Nội (ID: 4108)</strong>
-                <span class="badge-num" style="background: #D4EDDA; color: #155724;">AQI: 42 (Tốt)</span>
-            </div>
-            <p class="tip-desc">Quốc gia: VN • Tọa độ: 21.018, 105.805</p>
-            <div style="margin-top: 10px; display: flex; justify-content: space-between; font-size: 0.85rem;">
-                <span>Bụi mịn PM2.5: <strong>10.2 µg/m³</strong></span>
-                <span style="color: var(--text-muted);">Vừa cập nhật xong</span>
-            </div>
-            <p style="font-size: 0.75rem; color: var(--primary); margin-top: 8px;">✓ Kết nối OpenAQ v3 thành công</p>
-        `;
-    }
+    const btn = document.getElementById('btn-aq-refresh');
+    if (!el) return;
+    if (btn) btn.disabled = true;
+    el.innerHTML = `<div style="text-align:center; padding: 16px; color: var(--text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> Đang cập nhật OpenAQ v3...</div>`;
+    setTimeout(() => {
+        const refreshed = { ...SIM_AQ_DATA.hanoi, pm25: +(Math.random() * 40 + 8).toFixed(1), pm10: +(Math.random() * 55 + 15).toFixed(1), no2: +(Math.random() * 25 + 6).toFixed(1), updated: 'Vừa xong', cached: false };
+        el.innerHTML = simRenderAQStation(refreshed);
+        if (btn) btn.disabled = false;
+    }, 900);
+}
+
+// --- Health Topics Filter ---
+const HT_ALL_TOPICS = [
+    { cat: 'Sàng lọc phụ khoa', catColor: 'rose', icon: '🔬', title: 'Tầm soát ung thư cổ tử cung định kỳ', body: 'Xét nghiệm Pap smear mỗi 3 năm (21–29 tuổi) hoặc phối hợp HPV mỗi 5 năm (30–65 tuổi).' },
+    { cat: 'Thai kỳ & Dinh dưỡng', catColor: 'lavender', icon: '🌿', title: 'Bổ sung Axit Folic trước và trong thai kỳ', body: 'Phụ nữ dự định mang thai nên bổ sung ít nhất 400 mcg axit folic mỗi ngày để phòng ngừa dị tật ống thần kinh.' },
+    { cat: 'Hậu sản', catColor: 'terracotta', icon: '💛', title: 'Chăm sóc sức khỏe tinh thần sau sinh', body: 'Nhận diện sớm trầm cảm sau sinh (Baby Blues kéo dài trên 2 tuần) và liên hệ bác sĩ tâm lý kịp thời.' },
+    { cat: 'Tim mạch & Huyết áp', catColor: 'sage', icon: '❤️', title: 'Kiểm soát huyết áp ở phụ nữ', body: 'Huyết áp cao không triệu chứng là "kẻ giết người thầm lặng". Kiểm tra định kỳ hằng năm.' },
+    { cat: 'Xương khớp', catColor: 'lavender', icon: '🦴', title: 'Phòng ngừa loãng xương từ tuổi trung niên', body: 'Bổ sung canxi và vitamin D đầy đủ, vận động thể lực thường xuyên, tránh hút thuốc lá.' },
+    { cat: 'Sức khỏe tâm thần', catColor: 'rose', icon: '🧠', title: 'Quản lý stress & lo âu ở phụ nữ', body: 'Phụ nữ có tỉ lệ rối loạn lo âu gấp đôi nam giới. Liệu pháp nhận thức hành vi (CBT) và thiền định là những biện pháp được khuyến nghị.' }
+];
+
+const HT_CAT_COLORS = { rose: 'var(--rose-light)|var(--rose)', lavender: 'var(--lavender-light)|var(--lavender)', terracotta: 'var(--terracotta-light)|var(--terracotta)', sage: 'var(--sage-light)|var(--sage)' };
+
+function simFilterHealthTopics(filter) {
+    const list = document.getElementById('ht-topics-list');
+    if (!list) return;
+    const filtered = filter === 'all' ? HT_ALL_TOPICS : HT_ALL_TOPICS.filter(t =>
+        t.cat.toLowerCase().includes(filter) || t.title.toLowerCase().includes(filter) || t.body.toLowerCase().includes(filter)
+    );
+    list.innerHTML = filtered.length ? filtered.map(t => {
+        const [bg, col] = (HT_CAT_COLORS[t.catColor] || 'var(--surface-variant)|var(--on-surface)').split('|');
+        return `<div class="card" style="padding: 14px; animation: fadeUp 0.2s ease;">
+            <span class="badge-num" style="background: ${bg}; color: ${col}; margin-bottom: 6px; display: inline-block;">${t.icon} ${t.cat}</span>
+            <h4 style="margin: 0 0 6px 0;">${t.title}</h4>
+            <p class="tip-desc">${t.body}</p>
+        </div>`;
+    }).join('') : `<p class="tip-desc" style="text-align:center; padding:16px;">Không tìm thấy chủ đề phù hợp.</p>`;
+}
+
+// --- Cache Clear ---
+function simClearAllCache() {
+    localStorage.removeItem('annhien_sim_cache');
+    alert('🗑️ Đã xóa toàn bộ bộ nhớ tạm (OnlineCacheManager). Dữ liệu sẽ được tải mới khi cần.');
+    openModule('onlineutilities');
 }
