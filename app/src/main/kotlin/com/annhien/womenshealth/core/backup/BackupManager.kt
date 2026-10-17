@@ -7,7 +7,11 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
-import java.io.*
+import java.io.BufferedInputStream
+import java.io.BufferedOutputStream
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
 import java.nio.charset.StandardCharsets
 import java.security.SecureRandom
 import java.time.Instant
@@ -48,6 +52,7 @@ class BackupManager @Inject constructor(
         private const val DATABASE_BACKUP_NAME = "database.enc"
         private const val DATABASE_PASSPHRASE_NAME = "database-passphrase.enc"
         private const val HMAC_NAME = "integrity.hmac"
+        private const val MAX_BACKUP_BYTES = 512L * 1024L * 1024L
     }
 
     suspend fun createBackup(password: CharArray, destinationFile: File): BackupResult = withContext(Dispatchers.IO) {
@@ -125,18 +130,19 @@ class BackupManager @Inject constructor(
             ZipInputStream(BufferedInputStream(FileInputStream(backupFile))).use { zis ->
                 var entry = zis.nextEntry
                 while (entry != null) {
+                    val entryBytes = readEntrySafely(zis)
                     when (entry.name) {
-                        MANIFEST_NAME -> manifestStr = zis.readBytes().toString(StandardCharsets.UTF_8)
-                        DATABASE_BACKUP_NAME -> encryptedDb = zis.readBytes()
-                        DATABASE_PASSPHRASE_NAME -> encryptedPassphrase = zis.readBytes()
-                        HMAC_NAME -> readHmac = zis.readBytes()
+                        MANIFEST_NAME -> manifestStr = entryBytes.toString(StandardCharsets.UTF_8)
+                        DATABASE_BACKUP_NAME -> encryptedDb = entryBytes
+                        DATABASE_PASSPHRASE_NAME -> encryptedPassphrase = entryBytes
+                        HMAC_NAME -> readHmac = entryBytes
                     }
                     zis.closeEntry()
                     entry = zis.nextEntry
                 }
             }
 
-            if (manifestStr == null || encryptedDb == null || readHmac == null) {
+            if (manifestStr == null || encryptedDb == null || encryptedPassphrase == null || readHmac == null) {
                 return@withContext RestoreResult.Error("Tệp sao lưu bị thiếu thành phần hoặc định dạng không hợp lệ")
             }
 
@@ -148,14 +154,13 @@ class BackupManager @Inject constructor(
 
             val salt = android.util.Base64.decode(manifest.getString("saltBase64"), android.util.Base64.NO_WRAP)
             val iv = android.util.Base64.decode(manifest.getString("ivBase64"), android.util.Base64.NO_WRAP)
+            val passphraseIv = android.util.Base64.decode(
+                manifest.getString("passphraseIvBase64"),
+                android.util.Base64.NO_WRAP
+            )
             val key = deriveKey(password, salt)
 
-            val hmacInput = if (encryptedPassphrase != null) {
-                encryptedDb!! + encryptedPassphrase!!
-            } else {
-                encryptedDb!!
-            }
-            val expectedHmac = calculateHmac(key, hmacInput)
+            val expectedHmac = calculateHmac(key, encryptedDb!! + encryptedPassphrase!!)
             if (!expectedHmac.contentEquals(readHmac!!)) {
                 return@withContext RestoreResult.Error("Mật khẩu không đúng hoặc tệp sao lưu đã bị chỉnh sửa")
             }
@@ -164,32 +169,61 @@ class BackupManager @Inject constructor(
             cipher.init(Cipher.DECRYPT_MODE, key, GCMParameterSpec(GCM_TAG_LENGTH, iv))
             val decryptedDb = cipher.doFinal(encryptedDb)
 
-            val passphrase = if (encryptedPassphrase != null) {
-                val passphraseIv = android.util.Base64.decode(
-                    manifest.getString("passphraseIvBase64"),
-                    android.util.Base64.NO_WRAP
-                )
-                val passphraseCipher = Cipher.getInstance("AES/GCM/NoPadding")
-                passphraseCipher.init(Cipher.DECRYPT_MODE, key, GCMParameterSpec(GCM_TAG_LENGTH, passphraseIv))
-                passphraseCipher.doFinal(encryptedPassphrase)
-            } else {
-                keystoreManager.getDatabasePassphrase()
-            }
+            val passphraseCipher = Cipher.getInstance("AES/GCM/NoPadding")
+            passphraseCipher.init(Cipher.DECRYPT_MODE, key, GCMParameterSpec(GCM_TAG_LENGTH, passphraseIv))
+            val restoredPassphrase = passphraseCipher.doFinal(encryptedPassphrase)
 
             val dbFile = context.getDatabasePath(AnNhienDatabase.DATABASE_NAME)
             val stagingFile = File(context.filesDir, "database_staging.db")
             stagingFile.writeBytes(decryptedDb)
 
-            if (stagingFile.exists() && stagingFile.length() > 0) {
-                stagingFile.copyTo(dbFile, overwrite = true)
+            if (!stagingFile.exists() || stagingFile.length() == 0L) {
                 stagingFile.delete()
-                keystoreManager.importDatabasePassphrase(passphrase)
+                return@withContext RestoreResult.Error("Không thể chuẩn bị dữ liệu khôi phục")
+            }
+
+            // Keep the previous database available until the restored copy has been accepted.
+            val previousFile = File(context.filesDir, "database_previous.db")
+            if (dbFile.exists()) {
+                dbFile.copyTo(previousFile, overwrite = true)
+            }
+
+            try {
+                stagingFile.copyTo(dbFile, overwrite = true)
+                keystoreManager.importDatabasePassphrase(restoredPassphrase)
+                stagingFile.delete()
+                previousFile.delete()
+            } catch (e: Exception) {
+                if (previousFile.exists()) {
+                    previousFile.copyTo(dbFile, overwrite = true)
+                    previousFile.delete()
+                }
+                stagingFile.delete()
+                throw e
             }
 
             RestoreResult.Success(1, "Khôi phục dữ liệu thành công. Vui lòng khởi động lại ứng dụng.")
         } catch (e: Exception) {
             RestoreResult.Error("Lỗi khôi phục: Mật khẩu sai hoặc tệp hỏng (${e.localizedMessage})")
         }
+    }
+
+    private fun readEntrySafely(zis: ZipInputStream): ByteArray {
+        val output = java.io.ByteArrayOutputStream()
+        val buffer = ByteArray(64 * 1024)
+        var total = 0L
+
+        while (true) {
+            val read = zis.read(buffer)
+            if (read == -1) break
+            total += read
+            if (total > MAX_BACKUP_BYTES) {
+                throw SecurityException("Thành phần trong tệp sao lưu vượt quá giới hạn cho phép")
+            }
+            output.write(buffer, 0, read)
+        }
+
+        return output.toByteArray()
     }
 
     private fun deriveKey(password: CharArray, salt: ByteArray): SecretKeySpec {
