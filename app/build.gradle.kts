@@ -40,7 +40,6 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            // IMPORTANT: No INTERNET permission in release
         }
     }
 
@@ -142,6 +141,12 @@ dependencies {
     // Serialization
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.gson)
+
+    // Online utilities
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.kotlinx.serialization)
+    implementation(libs.okhttp)
+    implementation(libs.okhttp.logging.interceptor)
 
     // PDF & CSV
     implementation(libs.itext7.kernel)
