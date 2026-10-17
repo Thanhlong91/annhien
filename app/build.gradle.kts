@@ -148,6 +148,9 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging.interceptor)
 
+    // Location
+    implementation("com.google.android.gms:play-services-location:21.3.0")
+
     // PDF & CSV
     implementation(libs.itext7.kernel)
     implementation(libs.itext7.layout)
