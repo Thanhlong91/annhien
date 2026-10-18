@@ -80,6 +80,13 @@ sealed class Screen(val route: String) {
         fun createRoute(latitude: Double, longitude: Double) =
             "online/air_quality?latitude=$latitude&longitude=$longitude"
     }
+
+    // ─── New online modules (Modules 1, 2, 3, 6, 7) ───────────────────
+    object WeatherUv : Screen("online/weather_uv")
+    object Workouts : Screen("online/workouts")
+    object DailyQuotes : Screen("online/daily_quotes")
+    object UsdaNutrition : Screen("online/usda_nutrition")
+    object PollenAllergy : Screen("online/pollen_allergy")
 }
 
 // Bottom navigation items

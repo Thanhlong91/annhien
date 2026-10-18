@@ -440,11 +440,17 @@ interface MedicalDocumentDao {
     @Query("SELECT * FROM medical_document WHERE medicalVisitId IS NULL")
     suspend fun getUnlinked(): List<MedicalDocumentEntity>
 
+    @Query("SELECT * FROM medical_document")
+    fun observeAll(): Flow<List<MedicalDocumentEntity>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(doc: MedicalDocumentEntity)
 
     @Delete
     suspend fun delete(doc: MedicalDocumentEntity)
+
+    @Query("DELETE FROM medical_document WHERE id = :id")
+    suspend fun deleteById(id: String)
 }
 
 @Dao

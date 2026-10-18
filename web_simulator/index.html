@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
     <title>An Nhiên — Ứng Dụng Sức Khỏe Phụ Nữ (Mô Phỏng Trực Quan)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,6 +18,7 @@
             <span class="logo-leaf">🌸</span>
             <strong>An Nhiên</strong>
             <span class="badge-offline"><i class="fa-solid fa-wifi-slash"></i> 100% Ngoại Tuyến</span>
+            <span class="badge-creator" style="background: rgba(184, 142, 209, 0.2); color: #e4c4fa; border: 1px solid rgba(184, 142, 209, 0.4); font-size: 0.75rem; padding: 3px 10px; border-radius: 20px; font-weight: 600; display: inline-flex; align-items: center; gap: 5px;"><i class="fa-solid fa-code"></i> Tạo bởi: 102</span>
         </div>
         <div class="controls">
             <button id="btn-theme-toggle" class="btn-tool" title="Đổi giao diện sáng/tối">
@@ -125,6 +126,22 @@
                             <div class="progress-bar-bg">
                                 <div id="water-bar" class="progress-bar-fill" style="width: 62.5%;"></div>
                             </div>
+                        </div>
+
+                        <!-- Daily Inspirational Quote Widget (Module 3) -->
+                        <div class="card" id="home-quote-card" onclick="openModule('quotes')" style="cursor: pointer; background: linear-gradient(135deg, rgba(95, 91, 125, 0.08) 0%, rgba(61, 104, 78, 0.08) 100%); border-left: 4px solid var(--secondary); padding: 14px 16px; margin-bottom: 12px; transition: transform 0.2s;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                <span style="font-size: 0.75rem; font-weight: 700; color: var(--secondary); text-transform: uppercase; letter-spacing: 0.5px;">
+                                    <i class="fa-solid fa-quote-left"></i> Lời khích lệ hôm nay
+                                </span>
+                                <span style="font-size: 0.72rem; color: var(--text-muted);"><i class="fa-solid fa-cloud"></i> Quotable API</span>
+                            </div>
+                            <p id="home-quote-text" style="font-style: italic; font-size: 0.88rem; line-height: 1.45; color: var(--text-primary); margin: 0 0 4px 0;">
+                                "Sức khỏe không chỉ là vắng bóng bệnh tật, mà là trạng thái bình an trọn vẹn của thể chất, tinh thần và tâm hồn."
+                            </p>
+                            <p id="home-quote-author" style="font-size: 0.78rem; font-weight: 600; color: var(--text-muted); text-align: right; margin: 0;">
+                                — Tổ chức Y tế Thế giới (WHO)
+                            </p>
                         </div>
 
                         <!-- Daily Wellness Reassurance -->
@@ -368,14 +385,57 @@
 
                         <h3 class="section-title">Tiện ích trực tuyến</h3>
                         <div class="menu-group">
-                            <div class="menu-item" onclick="openModule('foodsearch')">
-                                <div class="menu-icon icon-terracotta"><i class="fa-solid fa-utensils"></i></div>
+                            <!-- Module 1: Weather & UV -->
+                            <div class="menu-item" onclick="openModule('weatheruv')">
+                                <div class="menu-icon icon-terracotta"><i class="fa-solid fa-sun"></i></div>
                                 <div class="menu-info">
-                                    <strong>Dinh dưỡng thực phẩm</strong>
-                                    <span>Tra cứu calo, dưỡng chất qua Open Food Facts</span>
+                                    <strong>Thời tiết &amp; Cảnh báo UV</strong>
+                                    <span>Chỉ số UV theo giờ, nhiệt độ &amp; kem chống nắng (Open-Meteo)</span>
                                 </div>
                                 <i class="fa-solid fa-chevron-right chevron"></i>
                             </div>
+
+                            <!-- Module 2: Workouts -->
+                            <div class="menu-item" onclick="openModule('workouts')">
+                                <div class="menu-icon icon-rose"><i class="fa-solid fa-person-walking"></i></div>
+                                <div class="menu-info">
+                                    <strong>Bài tập thể dục phụ nữ</strong>
+                                    <span>Sàn chậu Kegel, Thai kỳ &amp; Thư giãn (Wger API)</span>
+                                </div>
+                                <i class="fa-solid fa-chevron-right chevron"></i>
+                            </div>
+
+                            <!-- Module 3: Daily Quotes -->
+                            <div class="menu-item" onclick="openModule('quotes')">
+                                <div class="menu-icon icon-lavender"><i class="fa-solid fa-quote-left"></i></div>
+                                <div class="menu-info">
+                                    <strong>Lời khích lệ mỗi ngày</strong>
+                                    <span>Trích dẫn truyền cảm hứng sức khỏe (Quotable API)</span>
+                                </div>
+                                <i class="fa-solid fa-chevron-right chevron"></i>
+                            </div>
+
+                            <!-- Module 6: USDA Micronutrients -->
+                            <div class="menu-item" onclick="openModule('usdanutrition')">
+                                <div class="menu-icon icon-sage"><i class="fa-solid fa-seedling"></i></div>
+                                <div class="menu-info">
+                                    <strong>Vi chất dinh dưỡng phụ nữ</strong>
+                                    <span>Axit Folic, Sắt, Canxi &amp; Đĩa dinh dưỡng (USDA FDC)</span>
+                                </div>
+                                <i class="fa-solid fa-chevron-right chevron"></i>
+                            </div>
+
+                            <!-- Module 7: Pollen & Allergy -->
+                            <div class="menu-item" onclick="openModule('pollenallergy')">
+                                <div class="menu-icon icon-terracotta"><i class="fa-solid fa-spa"></i></div>
+                                <div class="menu-info">
+                                    <strong>Dị ứng &amp; Phấn hoa</strong>
+                                    <span>Dự báo phấn hoa cỏ, bào tử nấm mốc (Open-Meteo AQ)</span>
+                                </div>
+                                <i class="fa-solid fa-chevron-right chevron"></i>
+                            </div>
+
+                            <!-- Existing utilities -->
                             <div class="menu-item" onclick="openModule('healthtopics')">
                                 <div class="menu-icon icon-rose"><i class="fa-solid fa-heart-pulse"></i></div>
                                 <div class="menu-info">
@@ -400,6 +460,17 @@
                                 </div>
                                 <i class="fa-solid fa-chevron-right chevron"></i>
                             </div>
+                        </div>
+
+                        <!-- App & Creator Credit Footer -->
+                        <div class="creator-footer" style="text-align: center; padding: 22px 14px 28px 14px; margin-top: 14px; color: var(--text-muted); font-size: 0.78rem;">
+                            <div style="font-size: 1.4rem; margin-bottom: 4px;">🌸</div>
+                            <strong style="color: var(--on-surface); font-size: 0.88rem; display: block; margin-bottom: 2px;">An Nhiên • Sức khỏe Phụ nữ</strong>
+                            <p style="margin: 0 0 8px 0; color: var(--text-secondary); font-size: 0.74rem;">Phiên bản 1.0.0 • SQLite Offline-First</p>
+                            <span style="display: inline-flex; align-items: center; gap: 6px; background: var(--surface-variant); padding: 5px 14px; border-radius: 14px; font-weight: 700; color: var(--tertiary); font-size: 0.8rem; border: 1px solid var(--outline-variant);">
+                                <i class="fa-solid fa-code"></i> Tạo bởi: 102
+                            </span>
+                            <p style="margin: 8px 0 0 0; font-size: 0.7rem; opacity: 0.75;">Bảo mật thông tin cá nhân &amp; 100% Hoạt động ngoại tuyến</p>
                         </div>
                     </section>
                 </div>
@@ -570,9 +641,6 @@
                         <button class="calc-key zero" onclick="pressCalc('0')">0</button>
                         <button class="calc-key" onclick="pressCalc('.')">.</button>
                         <button class="calc-key op-key orange" onclick="pressCalc('=')">=</button>
-                    </div>
-                    <div class="calc-hint">
-                        <small>Mẹo ngụy trang: Nhập mã PIN (1234) rồi nhấn "=" để mở An Nhiên</small>
                     </div>
                 </div>
 

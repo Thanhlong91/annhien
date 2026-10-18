@@ -49,6 +49,11 @@ import com.annhien.womenshealth.feature.settings.BackupRestoreScreen
 import com.annhien.womenshealth.feature.settings.SettingsScreen
 import com.annhien.womenshealth.feature.settings.online.OnlineUtilitiesScreen
 import com.annhien.womenshealth.feature.utilities.UtilitiesScreen
+import com.annhien.womenshealth.feature.online.environment.WeatherUvScreen
+import com.annhien.womenshealth.feature.online.workouts.WorkoutsScreen
+import com.annhien.womenshealth.feature.online.quotes.DailyQuotesScreen
+import com.annhien.womenshealth.feature.online.nutrition.UsdaNutritionScreen
+import com.annhien.womenshealth.feature.online.pollen.PollenAllergyScreen
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
@@ -229,6 +234,27 @@ fun MainNavGraph(
         composable(Screen.KegelModule.route) {
             KegelScreen(onNavigateBack = { navController.popBackStack() })
         }
+
+        // ─── Online Free API Modules (1, 2, 3, 6, 7) ─────────────────────
+        composable(Screen.WeatherUv.route) {
+            WeatherUvScreen(onNavigateBack = { navController.popBackStack() })
+        }
+
+        composable(Screen.Workouts.route) {
+            WorkoutsScreen(onNavigateBack = { navController.popBackStack() })
+        }
+
+        composable(Screen.DailyQuotes.route) {
+            DailyQuotesScreen(onNavigateBack = { navController.popBackStack() })
+        }
+
+        composable(Screen.UsdaNutrition.route) {
+            UsdaNutritionScreen(onNavigateBack = { navController.popBackStack() })
+        }
+
+        composable(Screen.PollenAllergy.route) {
+            PollenAllergyScreen(onNavigateBack = { navController.popBackStack() })
+        }
     }
 }
 
@@ -241,7 +267,7 @@ fun MainScaffold(
     onToggleTheme: () -> Unit = {},
     isDarkTheme: Boolean = false
 ) {
-    var currentTab by remember { mutableStateOf(0) }
+    var currentTab by androidx.compose.runtime.saveable.rememberSaveable { mutableIntStateOf(0) }
 
     val homeViewModel: HomeViewModel = hiltViewModel()
     val calendarViewModel: CalendarViewModel = hiltViewModel()

@@ -98,6 +98,7 @@ fun JournalEditScreen(
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
                 .padding(innerPadding)
+                .imePadding()
                 .padding(horizontal = 16.dp)
                 .verticalScroll(scrollState)
         ) {

@@ -281,12 +281,49 @@ fun UtilitiesScreen(
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
             ) {
                 Column {
+                    // Module 1: Weather & UV
                     UtilityItemRow(
-                        title = "Tra cứu dinh dưỡng thực phẩm",
-                        subtitle = "Tra cứu calo, dưỡng chất qua Open Food Facts",
-                        icon = Icons.Default.Restaurant,
-                        colorCategory = UtilityColorCategory.WATER,
-                        onClick = { onNavigateToRoute(Screen.FoodSearch.route) }
+                        title = "Thời tiết & Cảnh báo UV",
+                        subtitle = "Chỉ số UV theo giờ, nhiệt độ & kem chống nắng (Open-Meteo)",
+                        icon = Icons.Default.WbSunny,
+                        colorCategory = UtilityColorCategory.TERRACOTTA,
+                        onClick = { onNavigateToRoute(Screen.WeatherUv.route) }
+                    )
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f), modifier = Modifier.padding(start = 74.dp, end = 16.dp))
+                    // Module 2: Workouts
+                    UtilityItemRow(
+                        title = "Bài tập thể dục phụ nữ",
+                        subtitle = "Sàn chậu Kegel, Thai kỳ & Thư giãn (Wger API)",
+                        icon = Icons.Default.FitnessCenter,
+                        colorCategory = UtilityColorCategory.ROSE,
+                        onClick = { onNavigateToRoute(Screen.Workouts.route) }
+                    )
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f), modifier = Modifier.padding(start = 74.dp, end = 16.dp))
+                    // Module 3: Daily Quotes
+                    UtilityItemRow(
+                        title = "Lời khích lệ mỗi ngày",
+                        subtitle = "Trích dẫn truyền cảm hứng sức khỏe (Quotable API)",
+                        icon = Icons.Default.FormatQuote,
+                        colorCategory = UtilityColorCategory.LAVENDER,
+                        onClick = { onNavigateToRoute(Screen.DailyQuotes.route) }
+                    )
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f), modifier = Modifier.padding(start = 74.dp, end = 16.dp))
+                    // Module 6: USDA Micronutrients
+                    UtilityItemRow(
+                        title = "Vi chất dinh dưỡng phụ nữ",
+                        subtitle = "Axit Folic, Sắt, Canxi & Đĩa dinh dưỡng (USDA FDC)",
+                        icon = Icons.Default.Grass,
+                        colorCategory = UtilityColorCategory.SAGE,
+                        onClick = { onNavigateToRoute(Screen.UsdaNutrition.route) }
+                    )
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f), modifier = Modifier.padding(start = 74.dp, end = 16.dp))
+                    // Module 7: Pollen & Allergy
+                    UtilityItemRow(
+                        title = "Phấn hoa & Dị ứng hô hấp",
+                        subtitle = "Cảnh báo phấn hoa, nấm mốc & khuyến nghị thai kỳ (Open-Meteo)",
+                        icon = Icons.Default.Spa,
+                        colorCategory = UtilityColorCategory.TERRACOTTA,
+                        onClick = { onNavigateToRoute(Screen.PollenAllergy.route) }
                     )
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f), modifier = Modifier.padding(start = 74.dp, end = 16.dp))
                     UtilityItemRow(
@@ -311,6 +348,72 @@ fun UtilitiesScreen(
                         icon = Icons.Default.Public,
                         colorCategory = UtilityColorCategory.SUN,
                         onClick = { onNavigateToRoute(Screen.OnlineUtilities.route) }
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(28.dp))
+
+            // Creator & App Credit Footer
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.25f)
+                ),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(text = "🌸", fontSize = 28.sp)
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = "An Nhiên • Sức khỏe Phụ nữ",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = "Phiên bản 1.0.0 • SQLite Offline-First",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Surface(
+                        shape = RoundedCornerShape(20.dp),
+                        color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.6f),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Code,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.tertiary,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "Tạo bởi: 102",
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.tertiary
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Bảo mật thông tin cá nhân & 100% Hoạt động ngoại tuyến",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 11.sp,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
                     )
                 }
             }

@@ -28,8 +28,13 @@ android {
 
         val openAqApiKey: String = (project.findProperty("OPENAQ_API_KEY") as? String)
             ?: System.getenv("OPENAQ_API_KEY")
-            ?: ""
+            ?: "ddf48b14c02c48aa46eca82abab6fee9a7f291a6055c8fd9d96ff15ce2b576cd"
         buildConfigField("String", "OPENAQ_API_KEY", "\"$openAqApiKey\"")
+
+        val aqicnToken: String = (project.findProperty("AQICN_TOKEN") as? String)
+            ?: System.getenv("AQICN_TOKEN")
+            ?: "a91f3c8524d08973aa73870b750414f39de41442"
+        buildConfigField("String", "AQICN_TOKEN", "\"$aqicnToken\"")
     }
 
     buildTypes {

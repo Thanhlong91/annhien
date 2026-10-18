@@ -64,7 +64,9 @@ interface MedicalRecordsRepository {
     suspend fun saveMedicationSchedule(schedule: MedicationScheduleEntity)
     suspend fun deactivateMedication(scheduleId: String)
     fun observeDocuments(visitId: String): Flow<List<MedicalDocumentEntity>>
+    fun observeAllDocuments(): Flow<List<MedicalDocumentEntity>>
     suspend fun saveDocument(doc: MedicalDocumentEntity)
+    suspend fun deleteDocument(docId: String)
 }
 
 interface KnowledgeRepository {

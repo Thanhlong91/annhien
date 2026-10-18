@@ -38,6 +38,10 @@
     <!-- Wake lock for breathing timer continuation -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
+    <!-- Camera for capturing medical prescriptions and test results -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+
     <application
         android:name=".AnNhienApplication"
         android:allowBackup="false"
@@ -87,6 +91,17 @@
                 android:name="androidx.work.WorkManagerInitializer"
                 android:value="androidx.startup"
                 tools:node="remove" />
+        </provider>
+
+        <!-- FileProvider for medical records & prescription photo capture -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
         </provider>
 
     </application>

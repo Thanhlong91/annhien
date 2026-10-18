@@ -52,15 +52,6 @@ data class OpenAqParameter(
 )
 
 @Serializable
-data class OpenAqMeta(
-    val name: String? = null,
-    val page: Int? = null,
-    val limit: Int? = null,
-    val found: Int? = null
-)
-
-@Serializable
 data class OpenAqResultsResponse(
-    val meta: OpenAqMeta? = null,
     val results: List<OpenAqLocation> = emptyList()
 )

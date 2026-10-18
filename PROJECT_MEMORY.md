@@ -84,5 +84,18 @@ Repository đã có:
   - Đã sửa lỗi Version Catalog (`compose-animation`, `hilt-compiler`), lỗi typo DI `provideHabitLogDao`.
 - Đã chạy kiểm thử thành công:
   - `:app:compileDebugKotlin` thành công 100%.
-  - `:app:testDebugUnitTest` chạy 69/69 unit tests thành công 100%.
-  - `:app:assembleDebug` đóng gói APK thành công.
+  - `:app:testDebugUnitTest` chạy 100% unit tests thành công.
+  - `:app:assembleDebug` đóng gói APK thành công -> file `app-debug.apk` (~41.7MB).
+- Đã đồng bộ giao diện và tính năng khớp hoàn toàn với bản Web Simulator:
+  - Tích hợp 5 màn hình tiện ích trực tuyến mới: `WeatherUvScreen`, `WorkoutsScreen`, `DailyQuotesScreen`, `UsdaNutritionScreen`, `PollenAllergyScreen`.
+  - Bổ sung chữ ký bản quyền thương hiệu `Tạo bởi: 102` tại cả Web Simulator và ứng dụng Android (khu vực Utilities & Settings).
+  - Khắc phục lỗi lọc vi chất `selectedNutrientId` khi chuyển tab danh mục tại `UsdaNutritionScreen`.
+  - Khắc phục lỗi thiếu import animation `tween` tại `DailyQuotesScreen`.
+  - Cập nhật đồng bộ danh mục 8 dịch vụ trực tuyến tại `OnlineUtilityCatalog`.
+  - Đóng gói file cài đặt thực tế `app-debug.apk` sẵn sàng cài đặt và trải nghiệm trên điện thoại Android.
+- Bản cập nhật tối ưu hóa & trải nghiệm thực tế (v1.0.1):
+  - Khắc phục lỗi Back Navigation: dùng `rememberSaveable` duy trì chính xác tab Tiện ích khi quay lại từ các màn hình chi tiết.
+  - Tích hợp Camera & FileProvider: chụp và lưu trữ ảnh đơn thuốc / kết quả khám trực tiếp vào bộ nhớ riêng tư ngoại tuyến của máy kèm chế độ xem phóng to toàn màn hình.
+  - Tích hợp API Chất lượng không khí AQICN / WAQI thời gian thực với mã token chính thức, hiển thị chỉ số AQI chuẩn EPA, nồng độ bụi PM2.5, PM10, khí O₃, NO₂, nhiệt độ, độ ẩm và khuyến nghị bảo vệ thai kỳ / mẹ bé.
+  - Gỡ bỏ hoàn toàn dòng chữ gợi ý mã PIN trên màn hình máy tính bỏ túi ngụy trang, đảm bảo bí mật tối đa.
+  - Đã kiểm tra biên dịch Gradle `assembleDebug` thành công 100% và đóng gói APK mới nhất.

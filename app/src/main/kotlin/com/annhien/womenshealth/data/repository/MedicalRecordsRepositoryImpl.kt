@@ -57,7 +57,15 @@ class MedicalRecordsRepositoryImpl @Inject constructor(
         return medicalDocumentDao.observeByVisit(visitId)
     }
 
+    override fun observeAllDocuments(): Flow<List<MedicalDocumentEntity>> {
+        return medicalDocumentDao.observeAll()
+    }
+
     override suspend fun saveDocument(doc: MedicalDocumentEntity) {
         medicalDocumentDao.upsert(doc)
+    }
+
+    override suspend fun deleteDocument(docId: String) {
+        medicalDocumentDao.deleteById(docId)
     }
 }

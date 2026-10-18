@@ -211,14 +211,6 @@ fun LockScreen(
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    text = "Mẹo ngụy trang: Nhập mã PIN rồi nhấn \"=\" để mở An Nhiên",
-                    color = Color(0xFF666666),
-                    fontSize = 12.sp,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
-                )
             }
         }
     } else {
